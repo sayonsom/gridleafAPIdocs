@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://dev.gridleaf.com',
+  siteUrl: process.env.SITE_URL || 'https://dev.gridleaf.org',
   generateRobotsTxt: true,
   sitemapSize: 7000,
   changefreq: 'daily',
@@ -8,7 +8,7 @@ module.exports = {
   exclude: ['/server-sitemap.xml'],
   robotsTxtOptions: {
     additionalSitemaps: [
-      'https://your-domain.com/server-sitemap.xml',
+      'https://dev.gridleaf.org/server-sitemap.xml',
     ],
     policies: [
       {
