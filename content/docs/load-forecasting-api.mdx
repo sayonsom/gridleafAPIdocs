@@ -1,0 +1,672 @@
+---
+title: Load Forecasting API
+order: 2
+category: Load Growth
+---
+
+# Load Forecasting API
+
+Welcome to the API documentation for GridLeaf's Load Growth Forecasting service. Our API enables utility planners to accurately predict and model future load demands across distribution networks, incorporating emerging trends like EV adoption, data center proliferation, and distributed energy resources.
+
+## Overview
+
+The Load Forecasting API provides endpoints for:
+- Forecasting spatial load growth in distribution networks
+- Modeling EV charging impacts on local networks
+- Predicting data center power requirements
+- Analyzing distributed energy resource contributions
+- Simulating demand response program effects
+- Customer segmentation and load pattern analysis
+
+### Authentication
+
+All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
+
+#### API Key Usage
+
+Include your API key in the Authorization header:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+## Core Endpoints
+
+### Spatial Load Forecasting
+
+#### POST /forecast/spatial
+
+Generates geo-spatial load growth forecasts for distribution planning zones based on historical data, demographic trends, economic indicators, and known development plans.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "forecast_horizon_years": 5,
+  "resolution": "monthly",
+  "confidence_intervals": [0.9, 0.95],
+  "include_factors": ["demographic", "economic", "weather", "development_plans"]
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890123",
+  "planning_zone_id": "pz-12345",
+  "forecast_data": {
+    "timestamps": ["2025-05-01", "2025-06-01", "..."],
+    "mean_forecast_kw": [5400, 5650, "..."],
+    "p05_forecast_kw": [5100, 5300, "..."],
+    "p95_forecast_kw": [5700, 6000, "..."]
+  },
+  "growth_hotspots": [
+    {
+      "geolocation": {"lat": 37.7749, "lng": -122.4194},
+      "expected_growth_kw": 350,
+      "confidence": 0.92,
+      "primary_drivers": ["residential_development", "ev_adoption"]
+    }
+  ]
+}
+```
+
+##### Python Example
+
+```python
+import requests
+
+response = requests.post(
+    "https://api.gridleaf.com/forecast/spatial",
+    headers={"Authorization": "Bearer your-api-key"},
+    json={
+        "planning_zone_id": "pz-12345",
+        "forecast_horizon_years": 5,
+        "resolution": "monthly",
+        "confidence_intervals": [0.9, 0.95],
+        "include_factors": ["demographic", "economic", "weather", "development_plans"]
+    }
+)
+
+forecast_data = response.json()
+print(f"Mean load forecast for first period: {forecast_data['forecast_data']['mean_forecast_kw'][0]} kW")
+```
+
+### EV Charging Impact Analysis
+
+#### POST /forecast/ev-impacts
+
+Projects load growth from EV adoption based on regional adoption curves, charger types, and usage patterns.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "forecast_horizon_years": 5,
+  "ev_adoption_scenario": "medium_growth",
+  "charger_mix": {
+    "level_1_percentage": 20,
+    "level_2_percentage": 65,
+    "dcfc_percentage": 15
+  },
+  "include_fleet_adoption": true,
+  "fleet_types": ["delivery", "transit"]
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890124",
+  "planning_zone_id": "pz-12345",
+  "ev_load_forecast": {
+    "timestamps": ["2025-01-01", "2026-01-01", "..."],
+    "mean_additional_load_kw": [350, 520, "..."],
+    "peak_impacts_kw": [780, 1150, "..."],
+    "ev_count_projections": [1200, 1850, "..."]
+  },
+  "hotspot_analysis": [
+    {
+      "substation_id": "sub-789",
+      "risk_level": "high",
+      "expected_peak_increase_percentage": 18.5,
+      "recommended_upgrades": ["transformer_capacity", "conductor_upgrade"]
+    }
+  ],
+  "load_shape_impacts": {
+    "weekday_shape_changes": [...],
+    "weekend_shape_changes": [...]
+  }
+}
+```
+
+### Data Center Load Forecasting
+
+#### POST /forecast/data-centers
+
+Forecasts load growth from known and projected data center developments, with options for different efficiency and utilization scenarios.
+
+##### Request
+
+```json
+{
+  "planning_region_id": "reg-456",
+  "forecast_horizon_years": 7, 
+  "known_developments": [
+    {
+      "name": "Cloud Provider East",
+      "location": {"lat": 38.9072, "lng": -77.0369},
+      "estimated_capacity_mw": 35,
+      "expected_completion_date": "2026-03-01",
+      "pue_estimate": 1.2
+    }
+  ],
+  "include_speculative_developments": true,
+  "ai_compute_growth_scenario": "medium"
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890125",
+  "planning_region_id": "reg-456",
+  "data_center_forecast": {
+    "years": [2025, 2026, 2027, 2028, 2029, 2030],
+    "total_capacity_mw": [120, 168, 189, 222, 255, 290],
+    "projected_utilization_percentage": [75, 78, 82, 85, 87, 90],
+    "expected_load_mw": [90, 131, 155, 189, 222, 261]
+  },
+  "transmission_impacts": {
+    "constrained_corridors": ["corridor-123", "corridor-456"],
+    "upgrade_recommendations": [
+      {
+        "asset_id": "line-789",
+        "current_capacity_mw": 200,
+        "projected_overload_date": "2027-06-01",
+        "recommended_upgrade_capacity_mw": 350
+      }
+    ]
+  },
+  "substation_capacity_analysis": [...]
+}
+```
+
+### DER Impact Assessment
+
+#### POST /forecast/der-impacts
+
+Analyzes how distributed energy resources affect load forecasts and identifies potential hosting capacity issues.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "forecast_horizon_years": 5,
+  "der_adoption_scenario": "high_growth",
+  "der_types": ["solar_pv", "battery_storage", "small_wind"],
+  "include_hosting_capacity_analysis": true,
+  "include_transmission_impacts": true
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890126",
+  "planning_zone_id": "pz-12345",
+  "der_forecast": {
+    "years": [2025, 2026, 2027, 2028, 2029],
+    "solar_capacity_mw": [15.4, 22.8, 32.5, 45.1, 62.7],
+    "storage_capacity_mwh": [5.2, 9.8, 17.4, 28.9, 42.5],
+    "wind_capacity_mw": [1.2, 1.8, 2.5, 3.2, 4.0]
+  },
+  "net_load_impacts": {
+    "peak_reduction_mw": [3.2, 5.1, 7.8, 11.3, 15.7],
+    "minimum_daytime_load_mw": [8.5, 6.2, 3.8, 0.9, -2.4],
+    "reverse_power_flow_days_per_year": [0, 0, 12, 45, 87]
+  },
+  "hosting_capacity_constraints": [
+    {
+      "feeder_id": "feeder-123",
+      "current_hosting_capacity_mw": 4.5,
+      "projected_constraint_date": "2027-09-01",
+      "constraint_type": "voltage_regulation",
+      "mitigation_options": ["voltage_regulators", "smart_inverter_functions"]
+    }
+  ]
+}
+```
+
+### Customer Segmentation
+
+#### POST /customers/segmentation
+
+Creates load profile segments from smart meter data to identify patterns and improve forecast accuracy.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "segmentation_features": ["daily_load_shape", "seasonal_patterns", "peak_demand", "baseload"],
+  "number_of_segments": 6,
+  "include_demographic_overlay": true,
+  "time_period": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31"
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "a-456789",
+  "planning_zone_id": "pz-12345",
+  "segments": [
+    {
+      "segment_id": "seg-1",
+      "segment_name": "Daytime Peakers",
+      "customer_count": 3452,
+      "percentage_of_total": 15.4,
+      "average_consumption_kwh_per_day": 32.7,
+      "peak_hour_typical": 14,
+      "key_characteristics": ["high_daytime_usage", "solar_potential", "ev_adoption_candidates"],
+      "representative_load_profile": [...]
+    },
+    {
+      "segment_id": "seg-2",
+      "segment_name": "Evening Peakers",
+      "customer_count": 8934,
+      "percentage_of_total": 39.8,
+      "average_consumption_kwh_per_day": 28.3,
+      "peak_hour_typical": 19,
+      "key_characteristics": ["working_families", "ev_charging_evening", "smart_thermostat_potential"],
+      "representative_load_profile": [...]
+    }
+    // Additional segments...
+  ],
+  "growth_forecast_by_segment": {
+    "seg-1": {
+      "customer_count_growth": [3452, 3590, 3780, 3950, 4120],
+      "consumption_growth_factor": [1.0, 1.03, 1.08, 1.12, 1.18]
+    }
+    // Other segments...
+  }
+}
+```
+
+### Weather-Adjusted Forecasting
+
+#### POST /forecast/weather-adjusted
+
+Generates load forecasts incorporating historical weather correlations and climate projections.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "forecast_horizon_years": 5,
+  "resolution": "hourly",
+  "weather_scenarios": ["typical_year", "extreme_heat", "extreme_cold"],
+  "include_climate_change_trends": true,
+  "climate_model": "ensemble_average"
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890127",
+  "planning_zone_id": "pz-12345",
+  "weather_adjusted_forecasts": {
+    "typical_year": {
+      "peak_demand_mw": [45.3, 46.8, 48.4, 50.1, 52.0],
+      "energy_consumption_mwh": [210450, 217950, 225600, 233500, 241750]
+    },
+    "extreme_heat": {
+      "peak_demand_mw": [52.1, 54.3, 56.7, 59.2, 61.8],
+      "energy_consumption_mwh": [228350, 236500, 245000, 254000, 263500]
+    },
+    "extreme_cold": {
+      "peak_demand_mw": [47.8, 49.4, 51.1, 52.9, 54.9],
+      "energy_consumption_mwh": [219600, 227300, 235300, 243650, 252400]
+    }
+  },
+  "climate_trend_impacts": {
+    "additional_cooling_degree_days_projection": [35, 42, 50, 58, 67],
+    "heating_degree_days_reduction_projection": [28, 34, 40, 47, 54],
+    "peak_load_climate_factor": [1.02, 1.03, 1.04, 1.05, 1.06]
+  }
+}
+```
+
+## Advanced Endpoints
+
+### Non-Wires Alternatives Analysis
+
+#### POST /forecast/nwa-potential
+
+Identifies locations where targeted DERs, demand response, or energy efficiency could defer traditional infrastructure investments.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "infrastructure_constraints": [
+    {
+      "asset_id": "sub-789",
+      "asset_type": "substation",
+      "current_capacity_mw": 12.5,
+      "projected_overload_date": "2026-07-15"
+    }
+  ],
+  "nwa_options": ["battery_storage", "demand_response", "targeted_efficiency", "solar_plus_storage"],
+  "economic_threshold_usd": 5000000
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "a-456790",
+  "planning_zone_id": "pz-12345",
+  "nwa_opportunities": [
+    {
+      "asset_id": "sub-789",
+      "traditional_upgrade_cost_usd": 7500000,
+      "deferral_potential_years": 4,
+      "recommended_nwa_portfolio": {
+        "battery_storage_mw": 2.5,
+        "battery_storage_mwh": 10.0,
+        "demand_response_mw": 1.5,
+        "targeted_efficiency_mw": 0.8,
+        "solar_pv_mw": 3.5
+      },
+      "estimated_nwa_cost_usd": 5200000,
+      "net_savings_usd": 2300000,
+      "implementation_timeline": "2025-Q2 to 2025-Q4",
+      "risk_assessment": "medium"
+    }
+  ]
+}
+```
+
+### Microgrid Load Analysis
+
+#### POST /forecast/microgrid-potential
+
+Analyzes locations suitable for microgrids based on critical loads, reliability needs, and DER potential.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "critical_facilities": [
+    {
+      "facility_id": "fac-123",
+      "facility_type": "hospital",
+      "peak_load_kw": 750,
+      "annual_consumption_mwh": 3285,
+      "required_backup_duration_hours": 72
+    }
+  ],
+  "reliability_metrics": {
+    "historical_saidi": 120,
+    "historical_saifi": 1.5,
+    "wildfire_risk_zone": "high"
+  },
+  "der_potential": {
+    "solar_capacity_mw": 1.2,
+    "storage_potential_mwh": 4.5
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "a-456791",
+  "planning_zone_id": "pz-12345",
+  "microgrid_opportunities": [
+    {
+      "microgrid_id": "mg-001",
+      "recommended_coverage_area": {
+        "type": "Polygon",
+        "coordinates": [[[lng1, lat1], [lng2, lat2], ...]]
+      },
+      "critical_loads_covered": ["fac-123", "fac-456"],
+      "total_critical_load_kw": 1250,
+      "recommended_generation_portfolio": {
+        "solar_pv_mw": 1.5,
+        "battery_storage_mwh": 6.0,
+        "fuel_cell_mw": 0.5,
+        "diesel_backup_mw": 1.0
+      },
+      "estimated_implementation_cost_usd": 4500000,
+      "annual_resilience_benefit_usd": 850000,
+      "payback_period_years": 5.3
+    }
+  ]
+}
+```
+
+### Load Shape Forecasting
+
+#### POST /forecast/load-shapes
+
+Predicts how load shapes will evolve over time due to technology adoption, behavior changes, and policy impacts.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "forecast_horizon_years": 5,
+  "shape_change_factors": [
+    "ev_adoption", "solar_pv", "electrification", "battery_storage", 
+    "time_of_use_rates", "efficient_buildings"
+  ],
+  "resolution": "hourly",
+  "typical_days": ["summer_weekday", "summer_weekend", "winter_weekday", "winter_weekend"]
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890128",
+  "planning_zone_id": "pz-12345",
+  "load_shape_forecasts": {
+    "current_year": {
+      "summer_weekday": [0.65, 0.62, 0.60, 0.58, ...],
+      "summer_weekend": [0.55, 0.52, 0.50, 0.49, ...],
+      "winter_weekday": [0.78, 0.82, 0.85, 0.82, ...],
+      "winter_weekend": [0.70, 0.72, 0.75, 0.73, ...]
+    },
+    "year_5": {
+      "summer_weekday": [0.68, 0.64, 0.63, 0.60, ...],
+      "summer_weekend": [0.57, 0.54, 0.52, 0.50, ...],
+      "winter_weekday": [0.82, 0.85, 0.88, 0.86, ...],
+      "winter_weekend": [0.74, 0.76, 0.78, 0.76, ...]
+    }
+  },
+  "peak_to_average_ratio_trend": [1.8, 1.85, 1.9, 1.95, 2.0],
+  "load_factor_trend": [0.65, 0.64, 0.63, 0.62, 0.61],
+  "duck_curve_severity_index": [0.15, 0.22, 0.30, 0.38, 0.45]
+}
+```
+
+### Electrification Impact Analysis
+
+#### POST /forecast/electrification-impacts
+
+Forecasts load growth from electrification of buildings, transportation, and industrial processes.
+
+##### Request
+
+```json
+{
+  "planning_zone_id": "pz-12345",
+  "forecast_horizon_years": 10,
+  "electrification_scenario": "medium_policy_support",
+  "sectors": ["residential_heating", "commercial_buildings", "transportation", "industrial"],
+  "include_policy_timeline": true
+}
+```
+
+##### Response
+
+```json
+{
+  "forecast_id": "f-7890129",
+  "planning_zone_id": "pz-12345",
+  "electrification_load_growth": {
+    "years": [2025, 2027, 2029, 2031, 2033, 2035],
+    "residential_heating_mw": [2.3, 4.8, 7.5, 10.2, 13.0, 15.8],
+    "commercial_buildings_mw": [1.5, 3.2, 5.1, 7.0, 8.9, 10.8],
+    "transportation_mw": [3.8, 8.2, 13.5, 19.8, 26.2, 32.5],
+    "industrial_mw": [0.8, 1.9, 3.4, 5.3, 7.5, 9.8]
+  },
+  "seasonal_impacts": {
+    "winter_peak_growth_factor": [1.04, 1.09, 1.15, 1.22, 1.29, 1.36],
+    "summer_peak_growth_factor": [1.03, 1.07, 1.12, 1.17, 1.22, 1.28]
+  },
+  "grid_upgrade_triggers": [
+    {
+      "trigger_year": 2028,
+      "trigger_season": "winter",
+      "affected_assets": ["feeder-123", "feeder-456"],
+      "recommended_upgrades": ["reconductoring", "transformer_upgrade"]
+    }
+  ]
+}
+```
+
+## Utility Tools
+
+### Customer Data Integration
+
+#### POST /customers/data-sync
+
+Securely integrates customer data from utility systems to improve forecast accuracy.
+
+##### Request
+
+```json
+{
+  "sync_type": "incremental",
+  "data_sources": ["cis", "mdms", "gis"],
+  "planning_zone_id": "pz-12345",
+  "time_period": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-04-01"
+  },
+  "anonymize_data": true
+}
+```
+
+##### Response
+
+```json
+{
+  "sync_id": "sync-789456",
+  "planning_zone_id": "pz-12345",
+  "sync_status": "completed",
+  "records_processed": 12587,
+  "new_customers_added": 342,
+  "updated_customers": 11985,
+  "errors": 5,
+  "sync_timestamp": "2024-04-15T08:32:45Z",
+  "data_quality_metrics": {
+    "completeness_score": 0.98,
+    "consistency_score": 0.97,
+    "anomalies_detected": 23
+  },
+  "forecast_improvement_estimate": {
+    "rmse_reduction_percentage": 3.5,
+    "peak_forecast_improvement_percentage": 2.8
+  }
+}
+```
+
+### Planning Zone Management
+
+#### POST /admin/planning-zones
+
+Creates or updates planning zones for forecasting and analysis.
+
+##### Request
+
+```json
+{
+  "operation": "create",
+  "planning_zone": {
+    "name": "Northeast Urban District",
+    "description": "Urban area with high electrification potential",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[[lng1, lat1], [lng2, lat2], ...]]
+    },
+    "parent_zone_id": "region-456",
+    "metadata": {
+      "population": 85000,
+      "customer_count": 32500,
+      "peak_load_mw": 45.8,
+      "primary_substation_ids": ["sub-123", "sub-456"]
+    }
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "operation_id": "op-123456",
+  "status": "success",
+  "planning_zone_id": "pz-67890",
+  "name": "Northeast Urban District",
+  "creation_timestamp": "2024-04-15T10:15:30Z",
+  "customer_count_verified": 32487,
+  "data_model_status": "initialized",
+  "initial_forecast_id": "f-initial-67890"
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400  | Bad Request - The request was malformed or missing required parameters |
+| 401  | Unauthorized - Authentication failed or API key is invalid |
+| 403  | Forbidden - The API key doesn't have access to the requested resource |
+| 404  | Not Found - The requested resource doesn't exist |
+| 429  | Too Many Requests - Rate limit exceeded |
+| 500  | Internal Server Error - Something went wrong on our end |
+
+## Rate Limits
+
+- Free tier: 100 requests per day
+- Standard tier: 1,000 requests per day
+- Enterprise tier: 10,000+ requests per day (customizable)
+
+## Support
+
+For API support, contact api-support@gridleaf.com or visit our developer portal at https://developers.gridleaf.com.

@@ -1,0 +1,794 @@
+---
+title: Vegetation Risk API
+order: 2
+category: Resiliency
+---
+
+
+Welcome to the API documentation for GridLeaf's Vegetation Risk Analysis service. Our API enables utilities to identify, quantify, and prioritize vegetation-related threats to overhead distribution lines using satellite imagery and advanced AI analysis.
+
+## Overview
+
+The Vegetation Risk API provides endpoints for:
+- Automated vegetation detection and classification
+- Risk scoring and prioritization
+- Time-series growth analysis
+- Storm vulnerability assessment
+- Optimizing trim cycles and maintenance schedules
+- Cost-benefit analysis for vegetation management
+
+### Authentication
+
+All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
+
+#### API Key Usage
+
+Include your API key in the Authorization header:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+## Core Endpoints
+
+### Vegetation Detection
+
+#### POST /vegetation/detect
+
+Identifies and classifies vegetation near specified distribution lines using recent satellite imagery.
+
+##### Request
+
+```json
+{
+  "circuit_id": "cir-12345",
+  "buffer_distance_meters": 15,
+  "detection_parameters": {
+    "minimum_tree_height_meters": 3,
+    "species_classification": true,
+    "include_health_assessment": true
+  },
+  "image_date_range": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-04-15"
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "veg-789456",
+  "circuit_id": "cir-12345",
+  "imagery_details": {
+    "source": "sentinel_2",
+    "acquisition_date": "2024-03-12",
+    "resolution_meters": 0.5
+  },
+  "vegetation_detected": [
+    {
+      "vegetation_id": "veg-001",
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "species": {
+        "primary_classification": "oak",
+        "confidence": 0.92,
+        "alternative_classifications": ["maple", "elm"]
+      },
+      "dimensions": {
+        "height_meters": 12.5,
+        "crown_diameter_meters": 8.3,
+        "distance_to_line_meters": 4.2
+      },
+      "health_assessment": "healthy",
+      "risk_score": 82
+    }
+  ],
+  "summary_statistics": {
+    "total_trees_detected": 127,
+    "high_risk_count": 18,
+    "medium_risk_count": 35, 
+    "low_risk_count": 74,
+    "dominant_species": ["oak", "pine", "eucalyptus"]
+  }
+}
+```
+
+##### Python Example
+
+```python
+import requests
+
+response = requests.post(
+    "https://api.gridleaf.com/vegetation/detect",
+    headers={"Authorization": "Bearer your-api-key"},
+    json={
+        "circuit_id": "cir-12345",
+        "buffer_distance_meters": 15,
+        "detection_parameters": {
+            "minimum_tree_height_meters": 3,
+            "species_classification": true,
+            "include_health_assessment": true
+        },
+        "image_date_range": {
+            "start_date": "2024-01-01",
+            "end_date": "2024-04-15"
+        }
+    }
+)
+
+vegetation_data = response.json()
+print(f"High risk trees detected: {vegetation_data['summary_statistics']['high_risk_count']}")
+```
+
+### Risk Prioritization
+
+#### POST /vegetation/risk-analysis
+
+Analyzes detected vegetation to prioritize trimming and maintenance based on risk to power lines.
+
+##### Request
+
+```json
+{
+  "circuit_id": "cir-12345",
+  "risk_factors": ["height", "species", "health", "proximity", "growth_rate", "wind_exposure"],
+  "weight_adjustments": {
+    "proximity": 1.5,
+    "wind_exposure": 1.2
+  },
+  "critical_infrastructure": {
+    "include": true,
+    "weight": 2.0
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "risk-789012",
+  "circuit_id": "cir-12345",
+  "risk_segments": [
+    {
+      "segment_id": "seg-001",
+      "start_structure": "pole-123",
+      "end_structure": "pole-124",
+      "length_meters": 85,
+      "risk_score": 92,
+      "priority_level": "immediate",
+      "critical_trees": [
+        {
+          "vegetation_id": "veg-042",
+          "species": "eucalyptus",
+          "risk_contribution": 38,
+          "primary_factor": "height_and_proximity"
+        }
+      ],
+      "estimated_trim_hours": 4.5,
+      "potential_outage_impact_customer_hours": 3250
+    }
+  ],
+  "circuit_risk_summary": {
+    "overall_circuit_risk_score": 74,
+    "highest_risk_segment": "seg-001",
+    "priority_segments_count": 8,
+    "total_critical_trees": 23,
+    "estimated_total_maintenance_hours": 52
+  },
+  "risk_map_url": "https://api.gridleaf.com/maps/risk-789012",
+  "prioritized_maintenance_plan": {
+    "immediate_action_segments": ["seg-001", "seg-008", "seg-012"],
+    "30_day_segments": ["seg-005", "seg-009"],
+    "90_day_segments": ["seg-003", "seg-007", "seg-010"]
+  }
+}
+```
+
+### Growth Analysis
+
+#### POST /vegetation/growth-trends
+
+Analyzes vegetation growth patterns using historical satellite imagery to predict future risk.
+
+##### Request
+
+```json
+{
+  "circuit_id": "cir-12345",
+  "analysis_period_years": 3,
+  "imagery_interval_months": 6,
+  "growth_projections": {
+    "enable": true,
+    "projection_months": 24
+  },
+  "include_seasonal_factors": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "growth-345678",
+  "circuit_id": "cir-12345",
+  "time_series_data": {
+    "image_dates": ["2021-04-15", "2021-10-12", "2022-04-10", "2022-10-08", "2023-04-05", "2023-10-18", "2024-04-02"],
+    "average_growth_rates_by_species": {
+      "oak": [0.18, 0.05, 0.19, 0.06, 0.17, 0.04],
+      "pine": [0.22, 0.08, 0.23, 0.07, 0.21, 0.06],
+      "eucalyptus": [0.35, 0.12, 0.38, 0.11, 0.34, 0.10]
+    }
+  },
+  "tree_specific_growth": [
+    {
+      "vegetation_id": "veg-042",
+      "height_measurements_meters": [9.2, 9.3, 9.5, 9.6, 9.8, 9.9, 10.2],
+      "crown_diameter_measurements_meters": [7.1, 7.3, 7.5, 7.7, 7.9, 8.1, 8.3],
+      "annual_growth_rate_meters": 0.33,
+      "projected_height_meters": {
+        "6_months": 10.37,
+        "12_months": 10.53,
+        "24_months": 10.86
+      },
+      "projected_risk_scores": {
+        "current": 82,
+        "6_months": 85,
+        "12_months": 87,
+        "24_months": 92
+      }
+    }
+  ],
+  "segment_projections": [
+    {
+      "segment_id": "seg-001",
+      "current_risk_score": 92,
+      "projected_risk_scores": {
+        "6_months": 94,
+        "12_months": 96,
+        "24_months": 98
+      },
+      "recommended_trim_date": "2024-06-15"
+    }
+  ],
+  "seasonal_growth_factors": {
+    "spring_multiplier": 1.8,
+    "summer_multiplier": 1.2,
+    "fall_multiplier": 0.7,
+    "winter_multiplier": 0.3
+  }
+}
+```
+
+### Weather Vulnerability
+
+#### POST /vegetation/weather-vulnerability
+
+Analyzes how specific weather events could impact vegetation-related outage risks.
+
+##### Request
+
+```json
+{
+  "circuit_id": "cir-12345",
+  "weather_scenarios": ["high_wind", "ice_storm", "heavy_snow", "drought"],
+  "wind_parameters": {
+    "direction_degrees": 225,
+    "speed_kmh": 85
+  },
+  "include_historical_outages": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "weather-567890",
+  "circuit_id": "cir-12345",
+  "scenario_impacts": {
+    "high_wind": {
+      "overall_vulnerability_score": 78,
+      "highest_risk_segments": ["seg-001", "seg-008", "seg-012"],
+      "vulnerable_trees_count": 32,
+      "outage_probability_increase": 2.8,
+      "estimated_customer_hours_at_risk": 4850
+    },
+    "ice_storm": {
+      "overall_vulnerability_score": 65,
+      "highest_risk_segments": ["seg-005", "seg-007"],
+      "vulnerable_trees_count": 27,
+      "outage_probability_increase": 2.3,
+      "estimated_customer_hours_at_risk": 3950
+    }
+    // Other weather scenarios...
+  },
+  "highest_compound_risk_locations": [
+    {
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "vulnerable_across_scenarios": 3,
+      "primary_risk_factors": ["tall_eucalyptus", "leaning_orientation", "dead_branches"],
+      "recommended_action": "priority_removal"
+    }
+  ],
+  "historical_correlation": {
+    "past_outage_points": 18,
+    "vegetation_correlation_score": 0.72,
+    "highest_correlation_weather_type": "high_wind"
+  }
+}
+```
+
+### Trim Cycle Optimization
+
+#### POST /vegetation/optimize-maintenance
+
+Optimizes vegetation management schedules based on growth rates, risk, and resource constraints.
+
+##### Request
+
+```json
+{
+  "operating_region_id": "region-456",
+  "budget_constraints": {
+    "annual_budget_usd": 750000,
+    "quarterly_allocation": "weighted",
+    "emergency_reserve_percentage": 15
+  },
+  "crew_constraints": {
+    "max_crew_days_per_month": 45,
+    "crew_productivity_spans_per_day": 1.8
+  },
+  "risk_threshold": {
+    "minimum_action_score": 70,
+    "critical_infrastructure_override": true
+  },
+  "optimization_goals": ["risk_reduction", "cost_efficiency", "workload_balancing"]
+}
+```
+
+##### Response
+
+```json
+{
+  "optimization_id": "opt-123456",
+  "operating_region_id": "region-456",
+  "optimized_schedule": {
+    "quarterly_plans": [
+      {
+        "quarter": "2024-Q3",
+        "priority_circuits": ["cir-12345", "cir-23456", "cir-34567"],
+        "estimated_spans": 412,
+        "estimated_budget_usd": 187500,
+        "risk_reduction_score": 28.5,
+        "customer_minutes_saved_estimate": 185000
+      }
+    ]
+  },
+  "crew_assignments": {
+    "2024-Q3": {
+      "crew_days_required": 38,
+      "geographical_focus_areas": ["district-north", "district-central"],
+      "recommended_crew_size": 4,
+      "specialized_equipment_needed": ["bucket_truck", "chipper"]
+    }
+  },
+  "maintenance_mix": {
+    "trim_percentage": 72,
+    "removal_percentage": 18,
+    "hazard_mitigation_percentage": 10
+  },
+  "cost_benefit_analysis": {
+    "cost_per_risk_point_reduced": 6580,
+    "cost_per_customer_minute_saved": 1.01,
+    "roi_estimate": 3.2
+  },
+  "cycle_length_recommendations": {
+    "high_growth_areas_months": 18,
+    "medium_growth_areas_months": 24,
+    "low_growth_areas_months": 36
+  }
+}
+```
+
+## Advanced Endpoints
+
+### LiDAR Integration
+
+#### POST /vegetation/lidar-fusion
+
+Combines satellite imagery analysis with LiDAR data for enhanced accuracy.
+
+##### Request
+
+```json
+{
+  "circuit_id": "cir-12345",
+  "lidar_dataset_id": "lidar-789",
+  "fusion_parameters": {
+    "height_verification": true,
+    "line_clearance_analysis": true,
+    "terrain_modeling": true
+  },
+  "output_resolution_meters": 0.1
+}
+```
+
+##### Response
+
+```json
+{
+  "fusion_id": "fusion-901234",
+  "circuit_id": "cir-12345",
+  "processing_status": "completed",
+  "accuracy_improvements": {
+    "height_rmse_improvement": 0.42,
+    "classification_confidence_improvement": 0.15,
+    "clearance_measurement_improvement": 0.38
+  },
+  "enhanced_detection_results": {
+    "additional_trees_detected": 12,
+    "improved_species_classifications": 28,
+    "corrected_risk_assessments": 15
+  },
+  "clearance_violations": [
+    {
+      "vegetation_id": "veg-042",
+      "span_id": "span-123",
+      "clearance_meters": 1.8,
+      "violation_severity": "high",
+      "recommended_action": "immediate_trim"
+    }
+  ],
+  "3d_model_url": "https://api.gridleaf.com/models/fusion-901234",
+  "enhanced_risk_map_url": "https://api.gridleaf.com/maps/fusion-901234"
+}
+```
+
+### Species-Specific Risk Analysis
+
+#### POST /vegetation/species-risk
+
+Analyzes risk factors specific to tree species in the utility's service territory.
+
+##### Request
+
+```json
+{
+  "operating_region_id": "region-456",
+  "species_of_interest": ["eucalyptus", "pine", "oak", "palm"],
+  "risk_factors": ["failure_rate", "growth_rate", "branch_strength", "root_structure"],
+  "include_regional_factors": true,
+  "include_historical_data": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "species-678901",
+  "operating_region_id": "region-456",
+  "species_risk_profiles": [
+    {
+      "species": "eucalyptus",
+      "overall_risk_score": 87,
+      "key_risk_factors": [
+        {
+          "factor": "high_growth_rate",
+          "percentile": 92,
+          "annual_average_meters": 0.75
+        },
+        {
+          "factor": "branch_failure_rate",
+          "percentile": 88,
+          "incidents_per_100_trees": 4.2
+        }
+      ],
+      "regional_considerations": {
+        "local_growth_multiplier": 1.2,
+        "drought_sensitivity": "high",
+        "wind_vulnerability": "very_high"
+      },
+      "historical_outage_contribution": {
+        "percentage_of_vegetation_outages": 23.5,
+        "outages_per_100_trees": 3.8
+      },
+      "management_recommendations": {
+        "inspection_frequency_months": 12,
+        "trim_clearance_meters": 3.5,
+        "removal_consideration_threshold": "medium"
+      }
+    }
+  ],
+  "comparative_analysis": {
+    "highest_overall_risk": "eucalyptus",
+    "fastest_growing": "eucalyptus",
+    "most_drought_resistant": "oak",
+    "most_wind_resistant": "oak"
+  },
+  "regional_species_distribution": {
+    "eucalyptus_percentage": 18,
+    "pine_percentage": 23,
+    "oak_percentage": 42,
+    "palm_percentage": 7,
+    "other_percentage": 10
+  }
+}
+```
+
+### Storm Preparedness
+
+#### POST /vegetation/storm-prep
+
+Identifies priority areas for pre-storm vegetation work based on weather forecasts.
+
+##### Request
+
+```json
+{
+  "operating_region_id": "region-456",
+  "forecast_period_days": 14,
+  "storm_type": "high_wind",
+  "resource_constraints": {
+    "available_crew_days": 8,
+    "max_spans_addressable": 120
+  },
+  "critical_customers": {
+    "include": true,
+    "weight": 2.0
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "storm-789012",
+  "operating_region_id": "region-456",
+  "forecast_details": {
+    "forecast_date": "2024-04-15",
+    "storm_arrival_estimate": "2024-04-22",
+    "wind_speed_kmh": 95,
+    "precipitation_mm": 85,
+    "confidence": 0.85
+  },
+  "priority_actions": [
+    {
+      "circuit_id": "cir-12345",
+      "segment_id": "seg-001",
+      "risk_score": 92,
+      "customers_affected": 1250,
+      "critical_customers_count": 3,
+      "estimated_crew_hours": 5.5,
+      "specific_trees": ["veg-042", "veg-044", "veg-051"],
+      "access_considerations": "steep_terrain",
+      "priority_level": 1
+    }
+  ],
+  "optimal_resource_allocation": {
+    "day_1": {
+      "crew_assignments": [
+        {
+          "crew_id": 1,
+          "assigned_segments": ["cir-12345:seg-001", "cir-23456:seg-003"],
+          "estimated_completion_hours": 9.5
+        }
+      ]
+    }
+  },
+  "risk_reduction_summary": {
+    "pre_action_risk_score": 78,
+    "post_action_risk_score": 52,
+    "estimated_outage_reduction_percentage": 33,
+    "protected_customer_count": 4850,
+    "protected_critical_facilities": 8
+  }
+}
+```
+
+### Wildfire Risk Analysis
+
+#### POST /vegetation/wildfire-risk
+
+Analyzes vegetation that poses wildfire ignition risks due to potential contact with power lines.
+
+##### Request
+
+```json
+{
+  "circuit_id": "cir-12345",
+  "wildfire_factors": ["fuel_type", "fuel_density", "terrain", "historical_fires", "wind_patterns"],
+  "seasonal_conditions": "dry_season",
+  "public_safety_priority": "high"
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "fire-123456",
+  "circuit_id": "cir-12345",
+  "overall_ignition_risk_score": 82,
+  "high_risk_segments": [
+    {
+      "segment_id": "seg-001",
+      "ignition_risk_score": 94,
+      "key_factors": ["dense_dry_vegetation", "steep_terrain", "high_wind_exposure"],
+      "priority_level": "immediate",
+      "recommended_actions": ["expanded_clearing", "ground_fuel_removal", "accelerated_inspection"],
+      "estimated_treatment_cost_usd": 12500
+    }
+  ],
+  "vegetation_ignition_hotspots": [
+    {
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "vegetation_ids": ["veg-042", "veg-043", "veg-047"],
+      "fuel_classification": "high",
+      "flame_length_potential_meters": 8.5,
+      "spread_rate_potential_kmh": 3.2,
+      "defensible_space_status": "inadequate"
+    }
+  ],
+  "environmental_factors": {
+    "drought_index": 85,
+    "average_fuel_moisture": 8,
+    "wind_rose": [
+      {"direction": "NE", "frequency": 0.35, "average_speed_kmh": 28},
+      {"direction": "E", "frequency": 0.25, "average_speed_kmh": 32}
+    ]
+  },
+  "risk_reduction_opportunities": {
+    "vegetation_management_potential": 45,
+    "system_hardening_potential": 30,
+    "operational_practices_potential": 25
+  }
+}
+```
+
+## Utility Tools
+
+### Imagery Management
+
+#### POST /admin/imagery-refresh
+
+Updates satellite imagery for specific regions or prioritizes areas for new image acquisition.
+
+##### Request
+
+```json
+{
+  "operating_region_id": "region-456",
+  "refresh_type": "priority_areas",
+  "priority_circuits": ["cir-12345", "cir-23456"],
+  "image_specifications": {
+    "minimum_resolution_meters": 0.3,
+    "spectral_bands": ["rgb", "nir", "swir"],
+    "cloud_coverage_max_percentage": 10
+  },
+  "scheduling_preference": "next_available"
+}
+```
+
+##### Response
+
+```json
+{
+  "request_id": "img-123456",
+  "operating_region_id": "region-456",
+  "status": "scheduled",
+  "priority_circuits": {
+    "accepted": ["cir-12345", "cir-23456"],
+    "rejected": []
+  },
+  "acquisition_schedule": {
+    "estimated_acquisition_window": {
+      "start_date": "2024-04-20",
+      "end_date": "2024-04-30"
+    },
+    "satellite_passes": [
+      {
+        "satellite": "worldview_3",
+        "estimated_pass_time": "2024-04-22T14:35:00Z",
+        "coverage_percentage": 85,
+        "weather_forecast_status": "favorable"
+      }
+    ]
+  },
+  "processing_estimate": {
+    "expected_delivery_date": "2024-05-02",
+    "expedited_option_available": true,
+    "expedited_delivery_date": "2024-04-25",
+    "expedited_cost_usd": 1500
+  },
+  "notification_settings": {
+    "email_notifications": true,
+    "notification_recipients": ["user@utility.com"],
+    "status_update_frequency": "daily"
+  }
+}
+```
+
+### Field Verification
+
+#### POST /vegetation/field-verification
+
+Creates field work orders to verify AI-detected vegetation issues and collects ground truth data.
+
+##### Request
+
+```json
+{
+  "analysis_id": "veg-789456",
+  "verification_type": "high_risk_sample",
+  "sample_size": 25,
+  "field_data_requirements": [
+    "precise_measurements", 
+    "species_confirmation", 
+    "growth_indicators",
+    "photos"
+  ],
+  "crew_guidance": {
+    "include_detailed_maps": true,
+    "include_satellite_imagery": true
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "work_order_id": "wo-987654",
+  "analysis_id": "veg-789456",
+  "verification_status": "created",
+  "inspection_points": [
+    {
+      "point_id": "p-001",
+      "vegetation_id": "veg-042",
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "ai_assessment": {
+        "species": "eucalyptus",
+        "height_meters": 12.5,
+        "risk_score": 82
+      },
+      "field_instructions": "Confirm species, measure actual height and distance to line, assess health, take photos from north and east angles",
+      "mobile_app_link": "gridleaf://verify/p-001"
+    }
+  ],
+  "crew_resources": {
+    "route_optimization_url": "https://api.gridleaf.com/routes/wo-987654",
+    "offline_map_package_url": "https://api.gridleaf.com/maps/package/wo-987654",
+    "satellite_imagery_url": "https://api.gridleaf.com/imagery/wo-987654"
+  },
+  "reporting_requirements": {
+    "completion_deadline": "2024-04-30",
+    "required_data_fields": ["confirmed_species", "measured_height", "measured_distance", "health_assessment", "photos", "notes"],
+    "data_upload_instructions": "Use mobile app or upload CSV to https://api.gridleaf.com/upload/wo-987654"
+  }
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400  | Bad Request - The request was malformed or missing required parameters |
+| 401  | Unauthorized - Authentication failed or API key is invalid |
+| 403  | Forbidden - The API key doesn't have access to the requested resource |
+| 404  | Not Found - The requested resource doesn't exist |
+| 429  | Too Many Requests - Rate limit exceeded |
+| 500  | Internal Server Error - Something went wrong on our end |
+
+## Rate Limits
+
+- Standard tier: 500 requests per day
+- Professional tier: 2,500 requests per day
+- Enterprise tier: 10,000+ requests per day (customizable)
+
+## Support
+
+For API support, contact api-support@gridleaf.com or visit our developer portal at https://developers.gridleaf.com.

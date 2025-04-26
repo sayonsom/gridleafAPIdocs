@@ -1,0 +1,66 @@
+---
+title: Resiliency Optimization API
+order: 1
+category: Resiliency
+---
+
+# Resiliency Optimization API
+
+Welcome to the API documentation for Gridleaf's post-event power system optimization. Our API enables you to optimize power distribution and recovery strategies after grid disruption events.
+
+## Overview
+
+The Resiliency Optimization API provides endpoints for:
+- Optimizing fixed resource allocation
+- Managing dynamic load balancing
+- Integrating PMU data streams
+- Analyzing system resilience metrics
+
+### Authentication
+
+All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
+
+#### API Key Usage
+
+Include your API key in the Authorization header:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+## Endpoints
+
+### Fixed Resource Optimization
+
+#### POST /optimize/fixed-resources
+
+Optimizes usage of existing diesel generators and batteries for critical load maintenance.
+
+```json
+{
+  "critical_load_profile_kw": [2.5, 3.1],
+  "generator_capacity_kw": 5.0
+}
+```
+
+### PMU Data Integration
+
+#### POST /pmu/integrate
+
+Submit PMU data for real-time system analysis and optimization.
+
+```python
+import requests
+
+response = requests.post(
+    "https://api.gridleaf.com/pmu/integrate",
+    json={
+        "pmu_readings": [
+            {"timestamp": "2024-03-15T10:00:00Z", "voltage": 120.5},
+            {"timestamp": "2024-03-15T10:00:01Z", "voltage": 120.3}
+        ]
+    }
+)
+```
+
+
