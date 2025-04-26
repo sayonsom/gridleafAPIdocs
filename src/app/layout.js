@@ -1,10 +1,11 @@
 import { IBM_Plex_Sans } from "next/font/google";
 import { Fira_Code } from "next/font/google";
 import "./globals.css";
+import "@/styles/typography.css";
 import Navbar from "@/components/Navbar";
 
 const ibmPlexSans = IBM_Plex_Sans({
-  weight: ['400', '500', '600', '700'],
+  weight: ['100', '200', '300', '400', '500', '600', '700'],
   subsets: ["latin"],
   display: "swap",
   variable: "--font-ibm-plex-sans",

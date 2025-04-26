@@ -182,7 +182,7 @@ const components = {
   ),
   a: (props) => (
     <a 
-      className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline-offset-2 hover:underline transition-colors" 
+      className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 underline-offset-2 hover:underline transition-colors" 
       {...props} 
     />
   ),

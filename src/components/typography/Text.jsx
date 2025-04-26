@@ -7,7 +7,7 @@ const textStyles = {
   h3: 'text-xl font-semibold text-gray-900 dark:text-white mt-8 mb-4',
   body: 'text-base leading-7 text-gray-600 dark:text-gray-300',
   small: 'text-sm leading-6 text-gray-500 dark:text-gray-400',
-  link: 'text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline-offset-2 hover:underline transition-colors',
+  link: 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 underline-offset-2 hover:underline transition-colors',
   code: 'px-2 py-1 text-sm font-mono bg-gray-100 dark:bg-gray-800 rounded-md text-gray-900 dark:text-gray-100',
 };
 
