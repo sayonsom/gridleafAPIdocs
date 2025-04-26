@@ -17,7 +17,9 @@ The Power Outage Risk API provides endpoints for:
 - Critical infrastructure resilience planning
 - Outage impact modeling and customer communication assistance
 
-## Base URL
+> **Related APIs**: For vegetation-related risk assessment, see our [Vegetation Risk API](/docs/vegetation-risk-api). For comprehensive grid resilience analysis, check out our [Resiliency API](/docs/resiliency-api).
+
+### Base URL
 
 ```
 https://api.gridleaf.org/v1
@@ -42,6 +44,8 @@ Authorization: Bearer your-api-key
 #### POST /risk/weather-outage
 
 Calculates outage probability based on forecasted weather events for specific locations.
+
+> **Note**: For a complete risk assessment, consider combining this endpoint with the [Vegetation Risk API's](/docs/vegetation-risk-api) vegetation detection and risk analysis endpoints to account for both weather and vegetation-related risks.
 
 ##### Request
 
@@ -174,6 +178,8 @@ print(f"Peak outage probability: {peak_risk * 100:.1f}%")
 #### POST /risk/reliability-forecast
 
 Provides long-term SAIDI, SAIFI, and CAIDI projections for specified locations or service areas.
+
+> **Tip**: For a comprehensive reliability analysis, combine this endpoint with the [Vegetation Risk API's](/docs/vegetation-risk-api) growth trends endpoint to account for vegetation growth patterns in your long-term planning.
 
 ##### Request
 

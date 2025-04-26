@@ -17,6 +17,8 @@ The Resiliency Optimization API provides endpoints for:
 - Integrating PMU data streams
 - Analyzing system resilience metrics
 
+> **Related APIs**: For pre-event risk assessment, see our [Power Outage Risk API](/docs/power-outage-risk-api) and [Vegetation Risk API](/docs/vegetation-risk-api) to identify potential grid vulnerabilities before they occur.
+
 ### Authentication
 
 All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
@@ -37,6 +39,8 @@ Authorization: Bearer your-api-key
 
 Optimizes usage of existing diesel generators and batteries for critical load maintenance.
 
+> **Tip**: Use this endpoint in conjunction with the [Power Outage Risk API's](/docs/power-outage-risk-api) weather-outage endpoint to proactively prepare resources based on forecasted risks.
+
 ```json
 {
   "critical_load_profile_kw": [2.5, 3.1],
@@ -49,6 +53,8 @@ Optimizes usage of existing diesel generators and batteries for critical load ma
 #### POST /pmu/integrate
 
 Submit PMU data for real-time system analysis and optimization.
+
+> **Note**: This endpoint's data can be valuable for the [Vegetation Risk API's](/docs/vegetation-risk-api) risk-analysis endpoint to correlate system performance with vegetation-related issues.
 
 ```python
 import requests

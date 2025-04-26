@@ -18,6 +18,8 @@ The Vegetation Risk API provides endpoints for:
 - Optimizing trim cycles and maintenance schedules
 - Cost-benefit analysis for vegetation management
 
+> **Related APIs**: For weather-based outage risk assessment, see our [Power Outage Risk API](/docs/power-outage-risk-api). For comprehensive grid resilience analysis, check out our [Resiliency API](/docs/resiliency-api).
+
 ### Authentication
 
 All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
@@ -128,6 +130,8 @@ print(f"High risk trees detected: {vegetation_data['summary_statistics']['high_r
 
 Analyzes detected vegetation to prioritize trimming and maintenance based on risk to power lines.
 
+> **Tip**: For a complete risk assessment, combine this endpoint with the [Power Outage Risk API's](/docs/power-outage-risk-api) weather-outage endpoint to account for both vegetation and weather-related risks.
+
 ##### Request
 
 ```json
@@ -192,6 +196,8 @@ Analyzes detected vegetation to prioritize trimming and maintenance based on ris
 #### POST /vegetation/growth-trends
 
 Analyzes vegetation growth patterns using historical satellite imagery to predict future risk.
+
+> **Note**: This endpoint's data can be valuable input for the [Power Outage Risk API's](/docs/power-outage-risk-api) reliability-forecast endpoint when planning long-term grid reliability improvements.
 
 ##### Request
 

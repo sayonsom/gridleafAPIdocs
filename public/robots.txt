@@ -3,8 +3,8 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://dev.gridleaf.com
+Host: https://dev.gridleaf.org
 
 # Sitemaps
-Sitemap: https://dev.gridleaf.com/sitemap.xml
-Sitemap: https://your-domain.com/server-sitemap.xml
+Sitemap: https://dev.gridleaf.org/sitemap.xml
+Sitemap: https://dev.gridleaf.org/server-sitemap.xml
