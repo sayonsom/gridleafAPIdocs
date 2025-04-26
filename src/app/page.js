@@ -1,16 +1,29 @@
 import fs from 'fs';
 import path from 'path';
 import Link from 'next/link';
+import { Metadata } from 'next';
 
-export default function Home() {
+export const metadata = {
+  title: 'Home',
+  description: 'Welcome to GridLeaf API Documentation. Find comprehensive guides and documentation for our grid planning and resiliency tools.',
+};
+
+export const dynamic = 'force-static';
+export const revalidate = 3600; // Revalidate every hour
+
+async function getDocs() {
   const docsDirectory = path.join(process.cwd(), 'content/docs');
   const files = fs.readdirSync(docsDirectory);
-  const docs = files
+  return files
     .filter(file => file.endsWith('.mdx'))
     .map(file => ({
       slug: file.replace(/\.mdx$/, ''),
       title: file.replace(/\.mdx$/, '').replace(/-/g, ' ')
     }));
+}
+
+export default async function Home() {
+  const docs = await getDocs();
 
   return (
     <div className="min-h-screen p-8">

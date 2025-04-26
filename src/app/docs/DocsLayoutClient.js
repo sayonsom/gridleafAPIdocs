@@ -16,7 +16,7 @@ export default function DocsLayoutClient() {
   }, []);
 
   return (
-    <aside className="w-64 border-r h-screen overflow-y-auto scrollbar-hide">
+    <aside className="w-64 h-screen overflow-y-auto scrollbar-hide">
       <nav className="p-4 space-y-2">
         {docs.map((doc) => (
           <Link

@@ -1,0 +1,1206 @@
+---
+title: Renewable Buildable Area Analysis API
+order: 1
+category: renewable-api
+---
+
+# Renewable Buildable Area Analysis API
+
+Welcome to the API documentation for GridLeaf's Renewable Buildable Area Analysis service. Our API enables developers, utilities, and renewable energy companies to identify optimal sites for solar and wind development based on comprehensive geographic, environmental, and regulatory data.
+
+## Overview
+
+The Renewable Buildable Area Analysis API provides endpoints for:
+- Site suitability scoring for solar and wind projects
+- Constraint analysis for development limitations
+- Capacity estimation based on site characteristics
+- Land use and environmental impact assessment
+- Interconnection feasibility analysis
+
+### Authentication
+
+All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
+
+#### API Key Usage
+
+Include your API key in the Authorization header:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+## Core Endpoints
+
+### Site Suitability Analysis
+
+#### POST /renewable/site-suitability
+
+Evaluates and scores potential renewable energy development sites based on multiple criteria.
+
+##### Request
+
+```json
+{
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "renewable_type": "solar",
+  "project_parameters": {
+    "target_capacity_mw": 100,
+    "technology": "utility_pv_tracking",
+    "land_requirements_acres_per_mw": 5
+  },
+  "analysis_criteria": [
+    "solar_resource", "slope", "land_use", "transmission_proximity", 
+    "road_access", "environmental_constraints", "regulatory_constraints"
+  ],
+  "include_detailed_maps": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "site-123456",
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "area_acres": 1250.5,
+  "overall_suitability": {
+    "score": 78,
+    "rating": "high",
+    "buildable_area_acres": 850.2,
+    "estimated_capacity_mw": 170
+  },
+  "criteria_scores": {
+    "solar_resource": {
+      "score": 85,
+      "rating": "excellent",
+      "details": {
+        "average_ghi_kwh_per_m2_per_day": 5.8,
+        "annual_variability_percentage": 12,
+        "percentile_in_region": 92
+      }
+    },
+    "slope": {
+      "score": 75,
+      "rating": "good",
+      "details": {
+        "average_slope_percentage": 3.2,
+        "percentage_under_5pct_slope": 82,
+        "challenging_terrain_percentage": 12
+      }
+    },
+    "land_use": {
+      "score": 70,
+      "rating": "good",
+      "details": {
+        "current_use": "agricultural",
+        "compatible_percentage": 85,
+        "conflicting_uses": ["wetlands", "protected_agriculture"]
+      }
+    },
+    "transmission_proximity": {
+      "score": 90,
+      "rating": "excellent",
+      "details": {
+        "nearest_transmission_km": 1.2,
+        "voltage_kv": 138,
+        "substation_distance_km": 3.5,
+        "interconnection_capacity_mw": 200
+      }
+    },
+    "road_access": {
+      "score": 80,
+      "rating": "good",
+      "details": {
+        "distance_to_primary_road_km": 0.8,
+        "road_quality": "paved_two_lane",
+        "access_easement_required": false
+      }
+    },
+    "environmental_constraints": {
+      "score": 65,
+      "rating": "moderate",
+      "details": {
+        "wetlands_percentage": 8,
+        "endangered_species_habitat": "possible_concern",
+        "cultural_resources_risk": "low",
+        "viewshed_sensitivity": "moderate"
+      }
+    },
+    "regulatory_constraints": {
+      "score": 80,
+      "rating": "good",
+      "details": {
+        "zoning_compatibility": "high",
+        "permit_complexity": "moderate",
+        "incentive_programs": ["state_tax_credit", "county_expedited_permitting"],
+        "development_timeline_months": 12
+      }
+    }
+  },
+  "buildable_areas": {
+    "high_suitability_acres": 620.5,
+    "moderate_suitability_acres": 229.7,
+    "low_suitability_acres": 150.3,
+    "unsuitable_acres": 250.0,
+    "geojson_url": "https://api.gridleaf.com/maps/site-123456/buildable_areas.geojson"
+  },
+  "capacity_estimation": {
+    "maximum_capacity_mw": 170,
+    "optimal_capacity_mw": 120,
+    "estimated_annual_generation_mwh": 262800,
+    "capacity_factor_percentage": 25
+  },
+  "maps_and_visualizations": {
+    "suitability_heatmap_url": "https://api.gridleaf.com/maps/site-123456/heatmap",
+    "constraint_layers_url": "https://api.gridleaf.com/maps/site-123456/constraints",
+    "solar_resource_map_url": "https://api.gridleaf.com/maps/site-123456/solar_resource"
+  }
+}
+```
+
+##### Python Example
+
+```python
+import requests
+
+response = requests.post(
+    "https://api.gridleaf.com/renewable/site-suitability",
+    headers={"Authorization": "Bearer your-api-key"},
+    json={
+        "location": {
+            "type": "Polygon",
+            "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+        },
+        "renewable_type": "solar",
+        "project_parameters": {
+            "target_capacity_mw": 100,
+            "technology": "utility_pv_tracking",
+            "land_requirements_acres_per_mw": 5
+        },
+        "analysis_criteria": [
+            "solar_resource", "slope", "land_use", "transmission_proximity", 
+            "road_access", "environmental_constraints", "regulatory_constraints"
+        ],
+        "include_detailed_maps": true
+    }
+)
+
+site_analysis = response.json()
+print(f"Overall suitability score: {site_analysis['overall_suitability']['score']}")
+print(f"Buildable area (acres): {site_analysis['overall_suitability']['buildable_area_acres']}")
+print(f"Estimated capacity (MW): {site_analysis['overall_suitability']['estimated_capacity_mw']}")
+```
+
+### Constraint Analysis
+
+#### POST /renewable/constraint-analysis
+
+Identifies and analyzes constraints that may limit renewable energy development at a site.
+
+##### Request
+
+```json
+{
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "renewable_type": "wind",
+  "constraint_categories": [
+    "physical", "environmental", "regulatory", "social", "infrastructure"
+  ],
+  "include_mitigation_strategies": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "const-234567",
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "area_acres": 2580.3,
+  "renewable_type": "wind",
+  "constraint_summary": {
+    "total_constraints_identified": 8,
+    "severely_constrained_percentage": 18.5,
+    "moderately_constrained_percentage": 35.2,
+    "minimally_constrained_percentage": 46.3,
+    "primary_constraints": ["wetlands", "viewshed_impact", "eagle_habitat"]
+  },
+  "detailed_constraints": {
+    "physical": [
+      {
+        "constraint_type": "steep_slopes",
+        "severity": "moderate",
+        "percentage_of_site": 12.5,
+        "description": "Slopes exceeding 15% grade may require significant grading for access roads and turbine pads",
+        "mitigation_strategy": "Micrositing to avoid steepest areas, specialized construction techniques"
+      },
+      {
+        "constraint_type": "flood_zone",
+        "severity": "low",
+        "percentage_of_site": 5.2,
+        "description": "Portions of site within 100-year flood zone",
+        "mitigation_strategy": "Elevate electrical equipment, adjust turbine placement"
+      }
+    ],
+    "environmental": [
+      {
+        "constraint_type": "wetlands",
+        "severity": "high",
+        "percentage_of_site": 10.8,
+        "description": "Federally protected wetlands requiring avoidance or formal permitting process",
+        "mitigation_strategy": "Avoid wetland areas, pursue wetland mitigation banking if necessary"
+      },
+      {
+        "constraint_type": "eagle_habitat",
+        "severity": "high",
+        "percentage_of_site": 15.3,
+        "description": "Site contains potential golden eagle nesting habitat",
+        "mitigation_strategy": "Bird and bat conservation strategy, eagle conservation plan"
+      }
+    ],
+    "regulatory": [
+      {
+        "constraint_type": "zoning_limitations",
+        "severity": "moderate",
+        "percentage_of_site": 25.0,
+        "description": "Current zoning requires conditional use permit with height variance",
+        "mitigation_strategy": "Early engagement with county planning department"
+      }
+    ],
+    "social": [
+      {
+        "constraint_type": "viewshed_impact",
+        "severity": "high",
+        "percentage_of_site": 30.5,
+        "description": "Turbines would be visible from scenic byway and historic district",
+        "mitigation_strategy": "Visual impact assessment, community benefits package, reduced turbine count"
+      }
+    ],
+    "infrastructure": [
+      {
+        "constraint_type": "transmission_capacity",
+        "severity": "moderate",
+        "percentage_of_site": 100.0,
+        "description": "Nearest substation has limited capacity for new generation",
+        "mitigation_strategy": "Network upgrade cost assessment, phased development approach"
+      },
+      {
+        "constraint_type": "road_access",
+        "severity": "low",
+        "percentage_of_site": 35.0,
+        "description": "Some access roads would require upgrading for turbine transport",
+        "mitigation_strategy": "Road improvement plan, transportation plan for oversized components"
+      }
+    ]
+  },
+  "constraint_maps": {
+    "combined_constraints_url": "https://api.gridleaf.com/maps/const-234567/combined",
+    "buildable_areas_url": "https://api.gridleaf.com/maps/const-234567/buildable",
+    "individual_layers_base_url": "https://api.gridleaf.com/maps/const-234567/layers/"
+  },
+  "recommendation_summary": {
+    "development_feasibility": "challenging_but_possible",
+    "optimal_development_approach": "reduced_capacity_with_careful_siting",
+    "estimated_buildable_capacity_mw": 75,
+    "critical_next_steps": [
+      "eagle_conservation_plan",
+      "viewshed_impact_assessment",
+      "community_engagement_campaign"
+    ],
+    "permitting_complexity": "high",
+    "estimated_permitting_timeline_months": 24
+  }
+}
+```
+
+### Capacity Estimation
+
+#### POST /renewable/capacity-estimation
+
+Estimates potential renewable energy capacity based on site characteristics and technology choices.
+
+##### Request
+
+```json
+{
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "renewable_type": "solar",
+  "technology_options": [
+    "fixed_tilt", "single_axis_tracking", "dual_axis_tracking"
+  ],
+  "simulation_parameters": {
+    "module_efficiency_percentage": 20.5,
+    "dc_ac_ratio": 1.25,
+    "spacing_ratio": 0.4,
+    "losses_percentage": 14.0
+  },
+  "include_production_profile": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "cap-345678",
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "area_acres": 850.5,
+  "buildable_area_acres": 720.8,
+  "solar_resource": {
+    "annual_ghi_kwh_per_m2": 1850,
+    "annual_dni_kwh_per_m2": 2250,
+    "annual_dhi_kwh_per_m2": 450,
+    "optimal_tilt_degrees": 25,
+    "optimal_azimuth_degrees": 180
+  },
+  "technology_comparison": {
+    "fixed_tilt": {
+      "capacity_mwdc": 142.5,
+      "capacity_mwac": 114.0,
+      "annual_generation_mwh": 248500,
+      "capacity_factor_percentage": 24.8,
+      "land_use_efficiency_mw_per_acre": 0.16,
+      "estimated_capex_usd_per_watt": 1.05
+    },
+    "single_axis_tracking": {
+      "capacity_mwdc": 132.8,
+      "capacity_mwac": 106.2,
+      "annual_generation_mwh": 278500,
+      "capacity_factor_percentage": 29.9,
+      "land_use_efficiency_mw_per_acre": 0.15,
+      "estimated_capex_usd_per_watt": 1.15
+    },
+    "dual_axis_tracking": {
+      "capacity_mwdc": 118.5,
+      "capacity_mwac": 94.8,
+      "annual_generation_mwh": 290800,
+      "capacity_factor_percentage": 35.0,
+      "land_use_efficiency_mw_per_acre": 0.13,
+      "estimated_capex_usd_per_watt": 1.35
+    }
+  },
+  "recommended_technology": {
+    "technology": "single_axis_tracking",
+    "reasoning": "Best balance of capacity factor and land use efficiency",
+    "financial_metrics": {
+      "estimated_lcoe_usd_per_kwh": 0.032,
+      "estimated_capex_million_usd": 152.7,
+      "simple_payback_years": 8.2,
+      "estimated_irr_percentage": 12.5
+    }
+  },
+  "production_profiles": {
+    "monthly_generation_mwh": {
+      "single_axis_tracking": [18500, 19800, 24200, 26500, 28100, 29500, 30200, 29800, 26400, 22900, 18800, 17800],
+      "fixed_tilt": [16500, 17500, 21200, 22500, 23100, 24500, 24800, 24600, 22900, 20500, 16800, 15600]
+    },
+    "hourly_profile_url": "https://api.gridleaf.com/data/cap-345678/hourly_profiles.csv",
+    "p90_annual_generation_mwh": {
+      "single_axis_tracking": 264575,
+      "fixed_tilt": 236075
+    }
+  },
+  "grid_integration": {
+    "estimated_interconnection_capacity_mw": 80,
+    "curtailment_risk_level": "moderate",
+    "estimated_curtailment_percentage": 3.5,
+    "grid_upgrade_requirements": "moderate",
+    "estimated_upgrade_costs_million_usd": 4.2
+  },
+  "layout_visualization": {
+    "conceptual_layout_url": "https://api.gridleaf.com/maps/cap-345678/layout",
+    "3d_visualization_url": "https://api.gridleaf.com/visualizations/cap-345678/3d"
+  }
+}
+```
+
+### Interconnection Feasibility
+
+#### POST /renewable/interconnection-feasibility
+
+Analyzes the feasibility of interconnecting a renewable energy project to the grid at a specific location.
+
+##### Request
+
+```json
+{
+  "location": {"lat": 34.0522, "lng": -118.2437},
+  "project_parameters": {
+    "capacity_mw": 100,
+    "renewable_type": "solar",
+    "interconnection_voltage_kv": 115,
+    "project_timeline": {
+      "target_completion_year": 2026,
+      "phased_development": false
+    }
+  },
+  "analysis_options": {
+    "search_radius_km": 25,
+    "include_detailed_upgrade_analysis": true,
+    "include_queue_analysis": true
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "int-456789",
+  "location": {"lat": 34.0522, "lng": -118.2437},
+  "project_parameters": {
+    "capacity_mw": 100,
+    "renewable_type": "solar",
+    "interconnection_voltage_kv": 115
+  },
+  "nearby_infrastructure": {
+    "transmission_lines": [
+      {
+        "id": "line-123",
+        "voltage_kv": 115,
+        "distance_km": 5.2,
+        "owner": "Southern California Edison",
+        "available_capacity_mw": 150,
+        "ferc_jurisdiction": true
+      },
+      {
+        "id": "line-456",
+        "voltage_kv": 230,
+        "distance_km": 12.5,
+        "owner": "Southern California Edison",
+        "available_capacity_mw": 350,
+        "ferc_jurisdiction": true
+      }
+    ],
+    "substations": [
+      {
+        "id": "sub-789",
+        "name": "Valley Substation",
+        "distance_km": 8.4,
+        "owner": "Southern California Edison",
+        "voltage_levels_kv": [115, 69],
+        "available_capacity_mw": 120,
+        "expansion_potential": "moderate"
+      }
+    ]
+  },
+  "recommended_interconnection_options": [
+    {
+      "option": "line_tap",
+      "target_infrastructure_id": "line-123",
+      "distance_km": 5.2,
+      "estimated_cost_million_usd": 4.8,
+      "timeline_months": 24,
+      "risk_level": "moderate",
+      "advantages": ["shorter_distance", "adequate_capacity", "lower_cost"],
+      "disadvantages": ["potential_system_upgrades", "right_of_way_acquisition"]
+    },
+    {
+      "option": "substation_expansion",
+      "target_infrastructure_id": "sub-789",
+      "distance_km": 8.4,
+      "estimated_cost_million_usd": 7.2,
+      "timeline_months": 30,
+      "risk_level": "moderate",
+      "advantages": ["more_reliable_connection", "utility_preference"],
+      "disadvantages": ["higher_cost", "longer_timeline", "more_complex_permitting"]
+    }
+  ],
+  "grid_upgrade_requirements": {
+    "option_1_upgrades": [
+      {
+        "component": "line_reconductoring",
+        "scope": "5.5 miles of 115kV line",
+        "estimated_cost_million_usd": 2.8,
+        "cost_allocation": "shared",
+        "estimated_timeline_months": 18
+      }
+    ],
+    "option_2_upgrades": [
+      {
+        "component": "transformer_addition",
+        "scope": "New 115/69kV transformer",
+        "estimated_cost_million_usd": 3.5,
+        "cost_allocation": "direct_assigned",
+        "estimated_timeline_months": 24
+      },
+      {
+        "component": "protection_upgrades",
+        "scope": "Relay and protection equipment",
+        "estimated_cost_million_usd": 0.8,
+        "cost_allocation": "direct_assigned",
+        "estimated_timeline_months": 12
+      }
+    ]
+  },
+  "interconnection_queue_analysis": {
+    "active_projects_in_region": 12,
+    "total_capacity_in_queue_mw": 850,
+    "projects_ahead_in_queue": 5,
+    "capacity_ahead_in_queue_mw": 320,
+    "estimated_queue_wait_months": 18,
+    "cluster_study_schedule": {
+      "next_window_opening": "2024-10-01",
+      "next_window_closing": "2024-10-31",
+      "estimated_study_completion": "2025-12-15"
+    }
+  },
+  "regulatory_considerations": {
+    "jurisdiction": "ferc",
+    "process_type": "large_generator",
+    "key_milestones": [
+      {
+        "milestone": "feasibility_study",
+        "estimated_timeline_months": 3,
+        "estimated_cost_usd": 25000
+      },
+      {
+        "milestone": "system_impact_study",
+        "estimated_timeline_months": 9,
+        "estimated_cost_usd": 150000
+      },
+      {
+        "milestone": "facilities_study",
+        "estimated_timeline_months": 12,
+        "estimated_cost_usd": 200000
+      },
+      {
+        "milestone": "lgia_negotiation_and_execution",
+        "estimated_timeline_months": 6,
+        "estimated_cost_usd": 50000
+      }
+    ],
+    "total_timeline_months": 30,
+    "total_estimated_study_costs_usd": 425000
+  },
+  "recommendations": {
+    "preferred_interconnection_option": "line_tap",
+    "critical_path_items": [
+      "right_of_way_acquisition",
+      "system_impact_study",
+      "environmental_permitting"
+    ],
+    "risk_mitigation_strategies": [
+      "early_engagement_with_utility",
+      "phased_capacity_approach",
+      "concurrent_permitting_activities"
+    ],
+    "recommended_next_steps": [
+      "preliminary_consultation_with_utility",
+      "formal_interconnection_request",
+      "right_of_way_assessment"
+    ]
+  },
+  "visualization_resources": {
+    "interconnection_options_map_url": "https://api.gridleaf.com/maps/int-456789/options",
+    "upgrade_visualization_url": "https://api.gridleaf.com/visualizations/int-456789/upgrades"
+  }
+}
+```
+
+## Advanced Endpoints
+
+### Wind Resource Analysis
+
+#### POST /renewable/wind-resource
+
+Analyzes wind resources for a specific location to determine wind power generation potential.
+
+##### Request
+
+```json
+{
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "analysis_parameters": {
+    "hub_heights_m": [80, 100, 120, 140],
+    "turbine_models": ["vestas_v150_4.2mw", "ge_5.3-158", "siemens_gamesa_sg_5.8-170"],
+    "simulation_period_years": 30,
+    "include_climate_change_projections": true
+  },
+  "output_resolution": "high"
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "wind-567890",
+  "location": {
+    "type": "Polygon",
+    "coordinates": [[[lng1, lat1], [lng2, lat2], [lng3, lat3], [lng4, lat4], [lng1, lat1]]]
+  },
+  "area_acres": 3250.8,
+  "data_sources": {
+    "primary_model": "era5",
+    "validation_sources": ["merra2", "measured_stations"],
+    "period_of_record": "1990-2023",
+    "spatial_resolution_km": 1.0
+  },
+  "wind_resource_summary": {
+    "average_wind_speeds_m_s": {
+      "80m": 7.2,
+      "100m": 7.8,
+      "120m": 8.3,
+      "140m": 8.7
+    },
+    "wind_power_density_w_m2": {
+      "80m": 320,
+      "100m": 375,
+      "120m": 425,
+      "140m": 470
+    },
+    "wind_resource_classification": "class_5",
+    "resource_quality_ranking": "excellent",
+    "uncertainty_assessment": {
+      "speed_uncertainty_percentage": 5.5,
+      "energy_uncertainty_percentage": 12.0,
+      "confidence_level": "high"
+    }
+  },
+  "detailed_wind_characteristics": {
+    "wind_rose_url": "https://api.gridleaf.com/data/wind-567890/wind_rose.png",
+    "monthly_averages": {
+      "speeds_m_s_at_100m": [7.2, 7.5, 8.1, 8.3, 8.0, 7.8, 7.5, 7.4, 7.6, 7.9, 8.2, 7.6],
+      "power_density_w_m2_at_100m": [350, 368, 410, 425, 402, 385, 365, 358, 370, 390, 415, 375]
+    },
+    "diurnal_pattern": {
+      "amplitude_m_s": 1.8,
+      "peak_hour": 14,
+      "trough_hour": 4
+    },
+    "turbulence_intensity": {
+      "average": 0.12,
+      "90th_percentile": 0.18
+    },
+    "extreme_conditions": {
+      "1_year_extreme_gust_m_s": 28.5,
+      "50_year_extreme_gust_m_s": 42.3,
+      "icing_days_per_year": 5.2,
+      "max_temperature_celsius": 38,
+      "min_temperature_celsius": -15
+    },
+    "wind_shear": {
+      "alpha": 0.22,
+      "spatial_variability": "moderate"
+    }
+  },
+  "energy_production_estimates": {
+    "turbine_comparisons": [
+      {
+        "turbine_model": "vestas_v150_4.2mw",
+        "hub_height_m": 120,
+        "rotor_diameter_m": 150,
+        "rated_capacity_mw": 4.2,
+        "estimated_capacity_factor_percentage": 42.5,
+        "net_annual_energy_production_mwh_per_turbine": 15660,
+        "wake_losses_percentage": 8.5,
+        "optimal_spacing_rotor_diameters": 7.5,
+        "maximum_turbine_count": 38,
+        "total_capacity_mw": 159.6,
+        "total_annual_energy_mwh": 595080
+      },
+      {
+        "turbine_model": "ge_5.3-158",
+        "hub_height_m": 120,
+        "rotor_diameter_m": 158,
+        "rated_capacity_mw": 5.3,
+        "estimated_capacity_factor_percentage": 44.2,
+        "net_annual_energy_production_mwh_per_turbine": 20520,
+        "wake_losses_percentage": 9.2,
+        "optimal_spacing_rotor_diameters": 7.5,
+        "maximum_turbine_count": 34,
+        "total_capacity_mw": 180.2,
+        "total_annual_energy_mwh": 697680
+      },
+      {
+        "turbine_model": "siemens_gamesa_sg_5.8-170",
+        "hub_height_m": 140,
+        "rotor_diameter_m": 170,
+        "rated_capacity_mw": 5.8,
+        "estimated_capacity_factor_percentage": 47.5,
+        "net_annual_energy_production_mwh_per_turbine": 24150,
+        "wake_losses_percentage": 10.5,
+        "optimal_spacing_rotor_diameters": 8.0,
+        "maximum_turbine_count": 29,
+        "total_capacity_mw": 168.2,
+        "total_annual_energy_mwh": 700350
+      }
+    ],
+    "recommended_configuration": {
+      "turbine_model": "siemens_gamesa_sg_5.8-170",
+      "hub_height_m": 140,
+      "reasoning": "Highest energy production and capacity factor despite lower turbine count",
+      "optimized_layout_url": "https://api.gridleaf.com/maps/wind-567890/optimal_layout"
+    },
+    "uncertainty_analysis": {
+      "p50_annual_energy_mwh": 700350,
+      "p90_annual_energy_mwh": 630315,
+      "p99_annual_energy_mwh": 595298
+    }
+  },
+  "climate_change_projections": {
+    "methodology": "ensemble_gcm_downscaling",
+    "projected_changes": {
+      "wind_speed_percentage_change_by_2050": -2.5,
+      "energy_production_percentage_change_by_2050": -3.8,
+      "extreme_events_frequency_change": "+15%"
+    },
+    "confidence_level": "medium"
+  },
+  "visualizations": {
+    "wind_speed_map_url": "https://api.gridleaf.com/maps/wind-567890/wind_speed",
+    "energy_density_map_url": "https://api.gridleaf.com/maps/wind-567890/energy_density",
+    "optimal_layout_map_url": "https://api.gridleaf.com/maps/wind-567890/optimal_layout",
+    "wind_data_download_url": "https://api.gridleaf.com/data/wind-567890/timeseries.csv"
+  }
+}
+```
+
+### Development Timeline Analysis
+
+#### POST /renewable/development-timeline
+
+Analyzes and estimates realistic development timelines for renewable energy projects.
+
+##### Request
+
+```json
+{
+  "location": {"lat": 34.0522, "lng": -118.2437},
+  "project_parameters": {
+    "capacity_mw": 100,
+    "renewable_type": "solar",
+    "land_control_status": "option_secured",
+    "permitting_jurisdiction": "county",
+    "interconnection_status": "not_started"
+  },
+  "risk_assessment": {
+    "include": true,
+    "risk_factors": ["environmental", "community", "regulatory", "interconnection"]
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "time-678901",
+  "location": {"lat": 34.0522, "lng": -118.2437},
+  "project_parameters": {
+    "capacity_mw": 100,
+    "renewable_type": "solar",
+    "land_control_status": "option_secured",
+    "permitting_jurisdiction": "county",
+    "interconnection_status": "not_started"
+  },
+  "timeline_summary": {
+    "expected_total_duration_months": 36,
+    "optimistic_duration_months": 30,
+    "pessimistic_duration_months": 48,
+    "estimated_commercial_operation_date": "2027-04-15",
+    "critical_path_item": "interconnection_process"
+  },
+  "development_phases": {
+    "site_control": {
+      "status": "in_progress",
+      "tasks": [
+        {
+          "task": "option_agreement",
+          "status": "completed",
+          "duration_months": 3,
+          "completion_date": "2024-01-15"
+        },
+        {
+          "task": "land_survey",
+          "status": "in_progress",
+          "duration_months": 2,
+          "expected_completion_date": "2024-05-30"
+        },
+        {
+          "task": "title_research",
+          "status": "not_started",
+          "duration_months": 1,
+          "expected_start_date": "2024-06-01"
+        }
+      ],
+      "total_phase_duration_months": 6,
+      "risk_level": "low"
+    },
+    "resource_assessment": {
+      "status": "not_started",
+      "tasks": [
+        {
+          "task": "solar_resource_assessment",
+          "status": "not_started",
+          "duration_months": 3,
+          "expected_start_date": "2024-05-01"
+        },
+        {
+          "task": "geotechnical_studies",
+          "status": "not_started",
+          "duration_months": 2,
+          "expected_start_date": "2024-06-15"
+        }
+      ],
+      "total_phase_duration_months": 4,
+      "risk_level": "low"
+    },
+    "environmental_permitting": {
+      "status": "not_started",
+      "tasks": [
+        {
+          "task": "environmental_site_assessment",
+          "status": "not_started",
+          "duration_months": 3,
+          "expected_start_date": "2024-07-01"
+        },
+        {
+          "task": "cultural_resources_survey",
+          "status": "not_started",
+          "duration_months": 2,
+          "expected_start_date": "2024-08-15"
+        },
+        {
+          "task": "biological_surveys",
+          "status": "not_started",
+          "duration_months": 4,
+          "expected_start_date": "2024-08-15"
+        },
+        {
+          "task": "environmental_impact_report",
+          "status": "not_started",
+          "duration_months": 12,
+          "expected_start_date": "2024-11-01"
+        },
+        {
+          "task": "permit_applications",
+          "status": "not_started",
+          "duration_months": 8,
+          "expected_start_date": "2025-07-01"
+        }
+      ],
+      "total_phase_duration_months": 20,
+      "risk_level": "high",
+      "risk_factors": ["endangered_species_concerns", "tribal_consultation_requirements"]
+    },
+    "interconnection": {
+      "status": "not_started",
+      "tasks": [
+        {
+          "task": "feasibility_study",
+          "status": "not_started",
+          "duration_months": 3,
+          "expected_start_date": "2024-07-01"
+        },
+        {
+          "task": "system_impact_study",
+          "status": "not_started",
+          "duration_months": 9,
+          "expected_start_date": "2024-10-01"
+        },
+        {
+          "task": "facilities_study",
+          "status": "not_started",
+          "duration_months": 9,
+          "expected_start_date": "2025-07-01"
+        },
+        {
+          "task": "interconnection_agreement",
+          "status": "not_started",
+          "duration_months": 6,
+          "expected_start_date": "2026-04-01"
+        }
+      ],
+      "total_phase_duration_months": 27,
+      "risk_level": "high",
+      "risk_factors": ["grid_congestion", "upgrade_requirements"]
+    },
+    "power_marketing": {
+      "status": "not_started",
+      "tasks": [
+        {
+          "task": "ppa_negotiation",
+          "status": "not_started",
+          "duration_months": 9,
+          "expected_start_date": "2025-01-01"
+        },
+        {
+          "task": "regulatory_approvals",
+          "status": "not_started",
+          "duration_months": 6,
+          "expected_start_date": "2025-10-01"
+        }
+      ],
+      "total_phase_duration_months": 15,
+      "risk_level": "medium",
+      "risk_factors": ["competitive_market", "changing_policy_landscape"]
+    },
+    "financing": {
+      "status": "not_started",
+      "tasks": [
+        {
+          "task": "project_financial_model",
+          "status": "not_started",
+          "duration_months": 3,
+          "expected_start_date": "2025-04-01"
+        },
+        {
+          "task": "tax_equity_commitment",
+          "status": "not_started",
+          "duration_months": 6,
+          "expected_start_date": "2026-01-01"
+        },
+        {
+          "task": "debt_financing",
+          "status": "not_started",
+          "duration_months": 6,
+          "expected_start_date": "2026-04-01"
+        }
+      ],
+      "total_phase_duration_months": 15,
+      "risk_level": "medium",
+      "risk_factors": ["interest_rate_environment", "tax_credit_availability"]
+    },
+    "construction": {
+      "status": "not_started",
+      "tasks": [
+        {
+          "task": "epc_selection",
+          "status": "not_started",
+          "duration_months": 4,
+          "expected_start_date": "2026-01-01"
+        },
+        {
+          "task": "equipment_procurement",
+          "status": "not_started",
+          "duration_months": 8,
+          "expected_start_date": "2026-05-01"
+        },
+        {
+          "task": "site_construction",
+          "status": "not_started",
+          "duration_months": 10,
+          "expected_start_date": "2026-06-15"
+        },
+        {
+          "task": "commissioning",
+          "status": "not_started",
+          "duration_months": 2,
+          "expected_start_date": "2027-02-15"
+        }
+      ],
+      "total_phase_duration_months": 14,
+      "risk_level": "medium",
+      "risk_factors": ["supply_chain_constraints", "weather_delays"]
+    }
+  },
+  "critical_path": [
+    "site_control.option_agreement",
+    "site_control.land_survey",
+    "interconnection.feasibility_study",
+    "interconnection.system_impact_study",
+    "interconnection.facilities_study",
+    "interconnection.interconnection_agreement",
+    "construction.equipment_procurement",
+    "construction.site_construction",
+    "construction.commissioning"
+  ],
+  "risk_assessment": {
+    "overall_timeline_risk": "moderate",
+    "high_risk_elements": [
+      {
+        "element": "environmental_permitting.environmental_impact_report",
+        "risk_level": "high",
+        "potential_delay_months": 6,
+        "mitigation_strategy": "Early stakeholder engagement, thorough preliminary studies"
+      },
+      {
+        "element": "interconnection.system_impact_study",
+        "risk_level": "high",
+        "potential_delay_months": 6,
+        "mitigation_strategy": "Early coordination with utility, consider phased capacity approach"
+      }
+    ],
+    "external_risk_factors": [
+      {
+        "factor": "regulatory_changes",
+        "impact_level": "medium",
+        "description": "Evolving renewable energy policies may affect incentives and requirements",
+        "monitoring_approach": "Regular policy updates through industry associations"
+      },
+      {
+        "factor": "supply_chain_disruptions",
+        "impact_level": "high",
+        "description": "Equipment delays could impact construction timeline",
+        "monitoring_approach": "Early procurement, flexible supplier agreements"
+      }
+    ]
+  },
+  "optimization_opportunities": [
+    {
+      "opportunity": "parallel_permitting",
+      "description": "Pursue county and state permits simultaneously",
+      "potential_time_savings_months": 3,
+      "implementation_complexity": "moderate"
+    },
+    {
+      "opportunity": "phased_development",
+      "description": "Consider 50MW initial phase to accelerate first revenue",
+      "potential_time_savings_months": 6,
+      "implementation_complexity": "high"
+    }
+  ],
+  "visualization_resources": {
+    "gantt_chart_url": "https://api.gridleaf.com/visualizations/time-678901/gantt",
+    "critical_path_visualization_url": "https://api.gridleaf.com/visualizations/time-678901/critical_path",
+    "risk_heat_map_url": "https://api.gridleaf.com/visualizations/time-678901/risk_map"
+  }
+}
+```
+
+## Utility Tools
+
+### Buildable Area Search
+
+#### POST /tools/buildable-area-search
+
+Searches for suitable renewable energy development sites based on specified criteria.
+
+##### Request
+
+```json
+{
+  "search_region": {
+    "state": "California",
+    "counties": ["Riverside", "San Bernardino", "Imperial"]
+  },
+  "project_parameters": {
+    "renewable_type": "solar",
+    "minimum_project_size_mw": 50,
+    "maximum_project_size_mw": 250,
+    "minimum_contiguous_acres": 300
+  },
+  "search_criteria": {
+    "minimum_solar_resource_kwh_per_m2_day": 5.5,
+    "maximum_slope_percentage": 5,
+    "maximum_distance_to_transmission_km": 10,
+    "maximum_distance_to_substation_km": 20,
+    "preferred_land_types": ["disturbed", "agricultural", "desert"],
+    "excluded_areas": ["protected_lands", "critical_habitat", "wetlands", "tribal_lands"]
+  },
+  "result_limit": 10
+}
+```
+
+##### Response
+
+```json
+{
+  "search_id": "search-123456",
+  "search_parameters": {
+    "region": "California: Riverside, San Bernardino, Imperial counties",
+    "renewable_type": "solar",
+    "size_range_mw": "50-250 MW"
+  },
+  "results_summary": {
+    "total_areas_found": 24,
+    "total_potential_capacity_mw": 3250,
+    "total_potential_area_acres": 18500,
+    "results_limited_to": 10
+  },
+  "top_sites": [
+    {
+      "site_id": "site-789012",
+      "name": "Desert Center Site 1",
+      "location": {
+        "center": {"lat": 33.7138, "lng": -115.4009},
+        "county": "Riverside",
+        "nearest_city": "Desert Center",
+        "distance_to_nearest_city_km": 8.5
+      },
+      "area_characteristics": {
+        "total_acres": 850,
+        "buildable_acres": 780,
+        "average_slope_percentage": 2.1,
+        "current_land_use": "disturbed desert",
+        "land_ownership": "private",
+        "estimated_land_value_usd_per_acre": 5200
+      },
+      "renewable_potential": {
+        "estimated_capacity_mw": 140,
+        "solar_resource_kwh_per_m2_day": 6.2,
+        "estimated_capacity_factor_percentage": 28.5,
+        "estimated_annual_generation_mwh": 350000
+      },
+      "grid_access": {
+        "distance_to_transmission_km": 3.2,
+        "nearest_line_voltage_kv": 230,
+        "distance_to_substation_km": 12.5,
+        "substation_name": "Desert Center",
+        "estimated_interconnection_capacity_mw": 200
+      },
+      "permitting_assessment": {
+        "jurisdiction": "Riverside County",
+        "zoning_compatibility": "high",
+        "known_environmental_constraints": "limited",
+        "estimated_permitting_timeline_months": 18,
+        "permitting_complexity": "moderate"
+      },
+      "overall_suitability_score": 85,
+      "site_map_url": "https://api.gridleaf.com/maps/site-789012"
+    }
+  ],
+  "search_visualization": {
+    "heat_map_url": "https://api.gridleaf.com/maps/search-123456/heat_map",
+    "comparison_matrix_url": "https://api.gridleaf.com/visualizations/search-123456/comparison"
+  },
+  "detailed_results_download": {
+    "csv_url": "https://api.gridleaf.com/data/search-123456/results.csv",
+    "geojson_url": "https://api.gridleaf.com/data/search-123456/boundaries.geojson"
+  }
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400  | Bad Request - The request was malformed or missing required parameters |
+| 401  | Unauthorized - Authentication failed or API key is invalid |
+| 403  | Forbidden - The API key doesn't have access to the requested resource |
+| 404  | Not Found - The requested resource doesn't exist |
+| 429  | Too Many Requests - Rate limit exceeded |
+| 500  | Internal Server Error - Something went wrong on our end |
+
+## Rate Limits
+
+- Standard tier: 500 requests per day
+- Professional tier: 2,500 requests per day
+- Enterprise tier: 10,000+ requests per day (customizable)
+
+## Support
+
+For API support, contact api-support@gridleaf.com or visit our developer portal at https://dev.gridleaf.org.

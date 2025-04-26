@@ -14,8 +14,8 @@ export default function TableOfContents() {
     // Small delay to ensure the new content is rendered
     const timeoutId = setTimeout(() => {
       const elements = Array.from(document.querySelectorAll('h1, h2, h3, h4'));
-      const items = elements.map((element) => ({
-        id: element.id,
+      const items = elements.map((element, index) => ({
+        id: element.id || `heading-${index}`,
         text: element.textContent,
         level: Number(element.tagName.charAt(1))
       }));
@@ -28,13 +28,13 @@ export default function TableOfContents() {
   if (headings.length === 0) return null;
 
   return (
-    <nav className="w-64 border-l h-screen overflow-y-auto scrollbar-hide">
+    <nav className="w-64 h-screen overflow-y-auto scrollbar-hide">
       <div className="p-4">
         <h2 className="text-lg font-semibold mb-4">On this page</h2>
         <ul className="space-y-2">
-          {headings.map((heading) => (
+          {headings.map((heading, index) => (
             <li
-              key={heading.id}
+              key={`${heading.id}-${index}`}
               className={`${
                 heading.level === 1 ? 'font-bold' : ''
               } ${

@@ -1,0 +1,602 @@
+---
+title: 'LandParcel Analysis API'
+description: 'API documentation for streamlining right-of-way and easement processes'
+order: 2
+category: Load Growth
+---
+
+# LandParcel Analysis API
+
+The LandParcel Analysis API provides tools for streamlining right-of-way and easement processes in the energy sector. This comprehensive set of endpoints allows developers to integrate land parcel analysis capabilities into their applications.
+
+## Base URL
+
+```
+https://api.gridleaf.org/v1
+```
+
+## Authentication
+
+All API requests require an API key passed in the header:
+
+```bash
+Authorization: Bearer YOUR_API_KEY
+```
+
+To obtain an API key, please contact our [support team](mailto:support@landparcel-analysis.com).
+
+## Endpoints
+
+### Parcel Information
+
+#### Get Parcel Details
+
+```
+GET /parcels/{parcel_id}
+```
+
+Retrieves detailed information about a specific land parcel.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| parcel_id | path | Unique identifier for the parcel | Yes | string |
+
+**Response:**
+
+```json
+{
+  "parcel_id": "P12345678",
+  "address": {
+    "street": "123 Main Street",
+    "city": "Springfield",
+    "state": "IL",
+    "zip": "62701"
+  },
+  "area": {
+    "value": 2.5,
+    "unit": "acres"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [...]
+  },
+  "owner": {
+    "name": "John Smith",
+    "contact": "john.smith@example.com"
+  },
+  "zoning": "Residential",
+  "created_at": "2025-01-15T00:00:00Z",
+  "updated_at": "2025-04-10T00:00:00Z"
+}
+```
+
+#### List Parcels
+
+```
+GET /parcels
+```
+
+Retrieves a list of land parcels based on the provided filters.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| state | query | Filter by state | No | string |
+| city | query | Filter by city | No | string |
+| zoning | query | Filter by zoning type | No | string |
+| min_area | query | Minimum area (in acres) | No | number |
+| max_area | query | Maximum area (in acres) | No | number |
+| owner | query | Filter by owner name | No | string |
+| page | query | Page number for pagination | No | integer |
+| limit | query | Number of results per page | No | integer |
+
+**Response:**
+
+```json
+{
+  "total": 153,
+  "page": 1,
+  "limit": 10,
+  "parcels": [
+    {
+      "parcel_id": "P12345678",
+      "address": {
+        "street": "123 Main Street",
+        "city": "Springfield",
+        "state": "IL",
+        "zip": "62701"
+      },
+      "area": {
+        "value": 2.5,
+        "unit": "acres"
+      },
+      "owner": "John Smith",
+      "zoning": "Residential"
+    },
+    // Additional parcels...
+  ]
+}
+```
+
+### Right-of-Way Analysis
+
+#### Generate ROW Assessment
+
+```
+POST /analysis/row
+```
+
+Generates a comprehensive right-of-way assessment for specified parcels.
+
+**Request Body:**
+
+```json
+{
+  "parcel_ids": ["P12345678", "P87654321"],
+  "project_type": "transmission_line",
+  "voltage_level": 500,
+  "corridor_width": 50
+}
+```
+
+**Response:**
+
+```json
+{
+  "analysis_id": "A9876543",
+  "status": "completed",
+  "parcels_analyzed": 2,
+  "results": [
+    {
+      "parcel_id": "P12345678",
+      "compatibility_score": 0.87,
+      "constraints": [
+        {
+          "type": "environmental",
+          "description": "Wetland present in southeast corner",
+          "severity": "medium"
+        }
+      ],
+      "estimated_compensation": 45000,
+      "recommended_corridor": {
+        "type": "LineString",
+        "coordinates": [...]
+      }
+    },
+    // Additional parcel results...
+  ],
+  "created_at": "2025-04-25T14:30:00Z"
+}
+```
+
+#### Get ROW Analysis Status
+
+```
+GET /analysis/row/{analysis_id}
+```
+
+Retrieves the status and results of a previously requested ROW analysis.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| analysis_id | path | Unique identifier for the analysis | Yes | string |
+
+**Response:**
+
+```json
+{
+  "analysis_id": "A9876543",
+  "status": "completed", // options: queued, processing, completed, failed
+  "progress": 100,
+  "parcels_analyzed": 2,
+  "results": [...], // Same structure as in POST response
+  "created_at": "2025-04-25T14:30:00Z",
+  "completed_at": "2025-04-25T14:32:15Z"
+}
+```
+
+### Easement Management
+
+#### Create Easement Document
+
+```
+POST /easements
+```
+
+Generates an easement document based on parcel and project information.
+
+**Request Body:**
+
+```json
+{
+  "parcel_id": "P12345678",
+  "project_id": "PROJ001",
+  "easement_type": "transmission",
+  "width": 50,
+  "length": 500,
+  "duration": "permanent",
+  "compensation_amount": 45000,
+  "special_conditions": [
+    "No structures within easement area",
+    "Access for maintenance personnel"
+  ]
+}
+```
+
+**Response:**
+
+```json
+{
+  "easement_id": "E12345",
+  "document_url": "https://api.landparcel-analysis.com/documents/easement_E12345.pdf",
+  "status": "draft",
+  "created_at": "2025-04-25T15:00:00Z",
+  "expires_at": "2025-05-25T15:00:00Z" // URL expiration, not easement expiration
+}
+```
+
+#### Get Easement Document
+
+```
+GET /easements/{easement_id}
+```
+
+Retrieves information about a specific easement document.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| easement_id | path | Unique identifier for the easement | Yes | string |
+
+**Response:**
+
+```json
+{
+  "easement_id": "E12345",
+  "parcel_id": "P12345678",
+  "project_id": "PROJ001",
+  "easement_type": "transmission",
+  "status": "draft", // options: draft, sent, signed, recorded, terminated
+  "document_url": "https://api.landparcel-analysis.com/documents/easement_E12345.pdf",
+  "created_at": "2025-04-25T15:00:00Z",
+  "updated_at": "2025-04-25T15:00:00Z"
+}
+```
+
+#### Update Easement Status
+
+```
+PATCH /easements/{easement_id}
+```
+
+Updates the status of an easement document.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| easement_id | path | Unique identifier for the easement | Yes | string |
+
+**Request Body:**
+
+```json
+{
+  "status": "signed",
+  "signed_date": "2025-05-01T10:15:00Z",
+  "signatory": "John Smith",
+  "notes": "Signed at county office"
+}
+```
+
+**Response:**
+
+```json
+{
+  "easement_id": "E12345",
+  "status": "signed",
+  "updated_at": "2025-05-01T10:20:00Z",
+  "document_url": "https://api.landparcel-analysis.com/documents/easement_E12345_signed.pdf"
+}
+```
+
+### GIS Integration
+
+#### Upload GIS Data
+
+```
+POST /gis/upload
+```
+
+Uploads GIS data for analysis and integration with the land parcel database.
+
+**Request Body:**
+Multipart form data with the following fields:
+
+| Name | Description | Required |
+|------|-------------|----------|
+| file | GIS file (Shapefile, GeoJSON, KML) | Yes |
+| file_type | Type of file being uploaded | Yes |
+| project_id | Associated project ID | No |
+| description | Description of the data | No |
+
+**Response:**
+
+```json
+{
+  "upload_id": "U123456",
+  "status": "processing",
+  "file_name": "county_parcels.shp",
+  "feature_count": 532,
+  "processing_url": "https://api.landparcel-analysis.com/gis/status/U123456"
+}
+```
+
+#### Get Spatial Overlay
+
+```
+POST /gis/overlay
+```
+
+Performs spatial analysis by overlaying different layers.
+
+**Request Body:**
+
+```json
+{
+  "base_layer": {
+    "type": "parcel",
+    "ids": ["P12345678", "P87654321"]
+  },
+  "overlay_layers": [
+    {
+      "type": "environmental",
+      "category": "wetlands"
+    },
+    {
+      "type": "infrastructure",
+      "category": "existing_transmission"
+    }
+  ],
+  "buffer_distance": 500,
+  "buffer_unit": "meters",
+  "output_format": "geojson"
+}
+```
+
+**Response:**
+
+```json
+{
+  "analysis_id": "OA789012",
+  "status": "completed",
+  "results_url": "https://api.landparcel-analysis.com/gis/results/OA789012.geojson",
+  "summary": {
+    "total_area": 5.7,
+    "area_unit": "acres",
+    "intersections": [
+      {
+        "layer": "wetlands",
+        "area": 0.8,
+        "percentage": 14.0
+      },
+      {
+        "layer": "existing_transmission",
+        "length": 230,
+        "length_unit": "meters"
+      }
+    ]
+  }
+}
+```
+
+### Project Management
+
+#### Create Project
+
+```
+POST /projects
+```
+
+Creates a new project for land parcel analysis and easement management.
+
+**Request Body:**
+
+```json
+{
+  "name": "Northeast Transmission Expansion",
+  "description": "500kV transmission line expansion project",
+  "project_type": "transmission",
+  "start_date": "2025-06-01",
+  "end_date": "2027-12-31",
+  "region": {
+    "states": ["NY", "CT", "MA"],
+    "counties": ["Albany", "Hartford", "Berkshire"]
+  },
+  "tags": ["critical infrastructure", "renewable integration"]
+}
+```
+
+**Response:**
+
+```json
+{
+  "project_id": "PROJ001",
+  "name": "Northeast Transmission Expansion",
+  "status": "active",
+  "created_at": "2025-04-26T09:00:00Z",
+  "updated_at": "2025-04-26T09:00:00Z",
+  "api_key": "proj_1a2b3c4d5e" // Project-specific API key
+}
+```
+
+#### Add Parcels to Project
+
+```
+POST /projects/{project_id}/parcels
+```
+
+Associates land parcels with a specific project.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| project_id | path | Unique identifier for the project | Yes | string |
+
+**Request Body:**
+
+```json
+{
+  "parcel_ids": ["P12345678", "P87654321"],
+  "priority": "high",
+  "notes": "Critical parcels for substation location"
+}
+```
+
+**Response:**
+
+```json
+{
+  "project_id": "PROJ001",
+  "added_parcels": 2,
+  "total_parcels": 15,
+  "updated_at": "2025-04-26T10:15:00Z"
+}
+```
+
+### Reporting
+
+#### Generate Project Report
+
+```
+POST /reports/projects/{project_id}
+```
+
+Generates a comprehensive report about the project's land acquisition status.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| project_id | path | Unique identifier for the project | Yes | string |
+
+**Request Body:**
+
+```json
+{
+  "report_type": "acquisition_status",
+  "format": "pdf",
+  "include_sections": [
+    "executive_summary",
+    "parcel_details",
+    "easement_status",
+    "financial_summary",
+    "timeline",
+    "risks"
+  ],
+  "as_of_date": "2025-04-26"
+}
+```
+
+**Response:**
+
+```json
+{
+  "report_id": "R456789",
+  "status": "queued",
+  "estimated_completion": "2025-04-26T11:00:00Z",
+  "status_url": "https://api.landparcel-analysis.com/reports/status/R456789"
+}
+```
+
+#### Get Report Status
+
+```
+GET /reports/status/{report_id}
+```
+
+Checks the status of a report generation request.
+
+**Parameters:**
+
+| Name | Located in | Description | Required | Schema |
+|------|------------|-------------|----------|--------|
+| report_id | path | Unique identifier for the report | Yes | string |
+
+**Response:**
+
+```json
+{
+  "report_id": "R456789",
+  "status": "completed", // options: queued, processing, completed, failed
+  "progress": 100,
+  "download_url": "https://api.landparcel-analysis.com/reports/R456789.pdf",
+  "expires_at": "2025-05-26T11:00:00Z"
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400 | Bad Request - The request was invalid or cannot be served |
+| 401 | Unauthorized - Authentication credentials were missing or incorrect |
+| 403 | Forbidden - The request is understood but it has been refused |
+| 404 | Not Found - The requested resource could not be found |
+| 429 | Too Many Requests - Rate limit has been exceeded |
+| 500 | Internal Server Error - Something went wrong on our end |
+
+## Rate Limits
+
+The API has the following rate limits:
+
+- Standard tier: 100 requests per minute
+- Professional tier: 500 requests per minute
+- Enterprise tier: Custom limits based on contract
+
+## Webhooks
+
+The API supports webhooks for asynchronous notifications about the completion of long-running processes. Configure webhooks in your account dashboard.
+
+### Webhook Events
+
+| Event | Description |
+|-------|-------------|
+| analysis.completed | Triggered when an analysis completes |
+| easement.status_changed | Triggered when an easement status changes |
+| report.ready | Triggered when a report is ready for download |
+| gis.upload_processed | Triggered when a GIS upload has been processed |
+
+### Example Webhook Payload
+
+```json
+{
+  "event": "easement.status_changed",
+  "timestamp": "2025-04-26T15:30:00Z",
+  "data": {
+    "easement_id": "E12345",
+    "previous_status": "draft",
+    "new_status": "signed",
+    "updated_at": "2025-04-26T15:28:45Z"
+  }
+}
+```
+
+## SDKs and Client Libraries
+
+We provide official client libraries for the following languages:
+
+- Python: [GitHub Repository](https://github.com/landparcel-analysis/python-sdk)
+- JavaScript/TypeScript: [GitHub Repository](https://github.com/landparcel-analysis/js-sdk)
+- Java: [GitHub Repository](https://github.com/landparcel-analysis/java-sdk)
+- C#: [GitHub Repository](https://github.com/landparcel-analysis/csharp-sdk)
+
+## Support
+
+For technical support, please contact [api-support@landparcel-analysis.com](mailto:api-support@landparcel-analysis.com) or visit our [Developer Portal](https://developers.landparcel-analysis.com).

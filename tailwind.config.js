@@ -8,8 +8,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-geist-sans)'],
-        mono: ['var(--font-geist-mono)'],
+        sans: ['var(--font-ibm-plex-sans)'],
+        mono: ['var(--font-fira-code)'],
       },
       typography: {
         DEFAULT: {
@@ -18,6 +18,26 @@ module.exports = {
             color: 'var(--tw-prose-body)',
             '[class~="lead"]': {
               color: 'var(--tw-prose-lead)',
+            },
+            'code': {
+              fontFamily: 'var(--font-fira-code)',
+              fontSize: '0.875em',
+            },
+            'pre': {
+              fontFamily: 'var(--font-fira-code)',
+              fontSize: '0.875em',
+              backgroundColor: 'rgba(26, 26, 26, 0.5)',
+              color: '#e5e5e5',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+              margin: '1.5rem 0',
+              overflowX: 'auto',
+            },
+            'pre code': {
+              backgroundColor: 'transparent',
+              padding: '0',
+              borderRadius: '0',
+              color: 'inherit',
             },
           },
         },

@@ -1,81 +1,48 @@
 import fs from 'fs';
 import path from 'path';
-import { compileMDX } from 'next-mdx-remote/rsc';
-import matter from 'gray-matter';
-import rehypeSlug from 'rehype-slug';
-import rehypePrism from 'rehype-prism-plus';
 import { notFound } from 'next/navigation';
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import matter from 'gray-matter';
 
-const components = {
-  pre: (props) => <div className="overflow-auto my-4 rounded-lg" {...props} />,
-  code: (props) => <code className="text-sm" {...props} />,
-  h1: (props) => (
-    <h1 
-      {...props} 
-      id={props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-')}
-      className="scroll-mt-20"
-    />
-  ),
-  h2: (props) => (
-    <h2 
-      {...props} 
-      id={props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-')}
-      className="scroll-mt-20"
-    />
-  ),
-  h3: (props) => (
-    <h3 
-      {...props} 
-      id={props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-')}
-      className="scroll-mt-20"
-    />
-  ),
-  h4: (props) => (
-    <h4 
-      {...props} 
-      id={props.children?.toString().toLowerCase().replace(/[^a-z0-9]+/g, '-')}
-      className="scroll-mt-20"
-    />
-  ),
-};
+export const dynamic = 'force-static';
+export const revalidate = 3600; // Revalidate every hour
 
 async function getDocBySlug(slug) {
+  const docsDirectory = path.join(process.cwd(), 'content/docs');
+  const filePath = path.join(docsDirectory, `${slug}.mdx`);
+  
   try {
-    if (!slug) return null;
-    
-    const realSlug = slug.replace(/\.mdx$/, '');
-    const filePath = path.join(process.cwd(), 'content/docs', `${realSlug}.mdx`);
-    
-    if (!fs.existsSync(filePath)) {
-      return null;
-    }
-    
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-    const { content, data } = matter(fileContents);
-    
-    const { content: compiledContent } = await compileMDX({
-      source: content,
-      components,
-      options: { 
-        parseFrontmatter: true,
-        mdxOptions: {
-          format: 'mdx',
-          rehypePlugins: [
-            rehypeSlug,
-            [rehypePrism, { showLineNumbers: true }]
-          ],
-        }
-      }
-    });
-
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const { data, content } = matter(fileContent);
     return {
-      content: compiledContent,
-      frontmatter: data
+      slug,
+      content,
+      frontmatter: data,
+      title: data.title || slug.replace(/-/g, ' ')
     };
   } catch (error) {
-    console.error('Error reading doc:', error);
     return null;
   }
+}
+
+export async function generateMetadata({ params }) {
+  const doc = await getDocBySlug(params.slug);
+  
+  if (!doc) {
+    return {
+      title: 'Not Found',
+      description: 'The requested documentation page could not be found.'
+    };
+  }
+
+  return {
+    title: doc.title,
+    description: doc.frontmatter.description || `Documentation for ${doc.title} - GridLeaf API Documentation`,
+    openGraph: {
+      title: doc.title,
+      description: doc.frontmatter.description || `Documentation for ${doc.title} - GridLeaf API Documentation`,
+    },
+  };
 }
 
 export async function generateStaticParams() {
@@ -90,21 +57,17 @@ export async function generateStaticParams() {
 }
 
 export default async function DocPage({ params }) {
-  const slug = await params.slug;
-  
-  if (!slug) {
-    notFound();
-  }
-
-  const doc = await getDocBySlug(slug);
+  const doc = await getDocBySlug(params.slug);
   
   if (!doc) {
     notFound();
   }
-  
+
   return (
-    <article className="prose prose-slate dark:prose-invert max-w-none">
-      {doc.content}
-    </article>
+    <div className="min-h-screen p-8">
+      <article className="prose dark:prose-invert max-w-none">
+        <MDXRemote source={doc.content} />
+      </article>
+    </div>
   );
 } 

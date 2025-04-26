@@ -1,0 +1,1428 @@
+---
+title: Power Outage Risk API
+order: 1
+category: outage-risk-api
+---
+
+# Power Outage Risk API
+
+Welcome to the API documentation for GridLeaf's Power Outage Risk Analysis service. Our API enables utilities, municipalities, businesses, and developers to assess outage risk based on near-term weather events and provides long-term reliability forecasts for specific locations.
+
+## Overview
+
+The Power Outage Risk API provides endpoints for:
+- Weather-based outage probability assessment for specific locations
+- Long-term reliability metric forecasting (SAIDI, SAIFI, CAIDI)
+- Grid vulnerability analysis
+- Critical infrastructure resilience planning
+- Outage impact modeling and customer communication assistance
+
+## Base URL
+
+```
+https://api.gridleaf.org/v1
+```
+
+### Authentication
+
+All API requests require authentication using an API key. You can obtain your API key from the GridLeaf dashboard.
+
+#### API Key Usage
+
+Include your API key in the Authorization header:
+
+```bash
+Authorization: Bearer your-api-key
+```
+
+## Core Endpoints
+
+### Near-Term Outage Risk Assessment
+
+#### POST /risk/weather-outage
+
+Calculates outage probability based on forecasted weather events for specific locations.
+
+##### Request
+
+```json
+{
+  "locations": [
+    {"lat": 37.7749, "lng": -122.4194, "location_name": "Downtown SF"},
+    {"lat": 37.3382, "lng": -121.8863, "location_name": "San Jose HQ"}
+  ],
+  "forecast_horizon_hours": 72,
+  "resolution_hours": 1,
+  "weather_considerations": ["wind", "precipitation", "lightning", "temperature", "ice"],
+  "include_confidence_intervals": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "risk-789456",
+  "request_timestamp": "2024-04-16T08:30:45Z",
+  "forecast_source": "noaa_nws",
+  "forecast_generated": "2024-04-16T07:00:00Z",
+  "location_risks": [
+    {
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "location_name": "Downtown SF",
+      "grid_characteristics": {
+        "primary_circuit": "cir-12345",
+        "feeder_type": "underground",
+        "redundancy_level": "network",
+        "infrastructure_age_years": 15
+      },
+      "hourly_risk_forecast": [
+        {
+          "timestamp": "2024-04-16T09:00:00Z",
+          "outage_probability": 0.02,
+          "confidence_interval": [0.01, 0.03],
+          "risk_level": "low",
+          "primary_risk_factors": ["light_rain"],
+          "expected_outage_duration_hours": 0.8
+        },
+        {
+          "timestamp": "2024-04-16T10:00:00Z",
+          "outage_probability": 0.03,
+          "confidence_interval": [0.01, 0.05],
+          "risk_level": "low",
+          "primary_risk_factors": ["moderate_rain"],
+          "expected_outage_duration_hours": 1.2
+        },
+        {
+          "timestamp": "2024-04-17T14:00:00Z",
+          "outage_probability": 0.35,
+          "confidence_interval": [0.28, 0.42],
+          "risk_level": "high",
+          "primary_risk_factors": ["high_wind", "lightning"],
+          "expected_outage_duration_hours": 3.5
+        }
+      ],
+      "peak_risk_period": {
+        "start_time": "2024-04-17T14:00:00Z",
+        "end_time": "2024-04-17T18:00:00Z",
+        "max_outage_probability": 0.35,
+        "risk_level": "high",
+        "driving_weather_conditions": {
+          "wind_speed_kmh": 65,
+          "precipitation_mm_per_hour": 15,
+          "lightning_strikes_per_hour_per_sqkm": 0.8
+        }
+      },
+      "72hr_summary": {
+        "average_risk_level": "moderate",
+        "peak_risk_level": "high",
+        "high_risk_hours": 4,
+        "moderate_risk_hours": 12,
+        "low_risk_hours": 56
+      }
+    },
+    {
+      "location": {"lat": 37.3382, "lng": -121.8863},
+      "location_name": "San Jose HQ",
+      "grid_characteristics": {
+        "primary_circuit": "cir-23456",
+        "feeder_type": "overhead",
+        "redundancy_level": "radial",
+        "infrastructure_age_years": 22
+      },
+      "hourly_risk_forecast": [...],
+      "peak_risk_period": {...},
+      "72hr_summary": {...}
+    }
+  ],
+  "aggregated_insights": {
+    "riskiest_location": "San Jose HQ",
+    "safest_location": "Downtown SF",
+    "regional_risk_pattern": "higher_risks_south",
+    "recommended_preparation_level": "moderate"
+  }
+}
+```
+
+##### Python Example
+
+```python
+import requests
+
+response = requests.post(
+    "https://api.gridleaf.com/risk/weather-outage",
+    headers={"Authorization": "Bearer your-api-key"},
+    json={
+        "locations": [
+            {"lat": 37.7749, "lng": -122.4194, "location_name": "Downtown SF"},
+            {"lat": 37.3382, "lng": -121.8863, "location_name": "San Jose HQ"}
+        ],
+        "forecast_horizon_hours": 72,
+        "resolution_hours": 1,
+        "weather_considerations": ["wind", "precipitation", "lightning", "temperature", "ice"],
+        "include_confidence_intervals": true
+    }
+)
+
+risk_data = response.json()
+peak_risk = risk_data["location_risks"][0]["peak_risk_period"]["max_outage_probability"]
+print(f"Peak outage probability: {peak_risk * 100:.1f}%")
+```
+
+### Long-Term Reliability Forecasting
+
+#### POST /risk/reliability-forecast
+
+Provides long-term SAIDI, SAIFI, and CAIDI projections for specified locations or service areas.
+
+##### Request
+
+```json
+{
+  "locations": [
+    {"lat": 37.7749, "lng": -122.4194, "location_name": "Downtown SF"},
+    {"lat": 37.3382, "lng": -121.8863, "location_name": "San Jose HQ"}
+  ],
+  "forecast_periods": ["1_month", "1_year", "5_years"],
+  "reliability_metrics": ["saidi", "saifi", "caidi", "maifi"],
+  "scenario_analysis": {
+    "enable": true,
+    "scenarios": ["baseline", "climate_change", "infrastructure_aging", "grid_hardening"]
+  },
+  "include_confidence_intervals": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "rel-123456",
+  "request_timestamp": "2024-04-16T08:35:30Z",
+  "location_forecasts": [
+    {
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "location_name": "Downtown SF",
+      "service_area_characteristics": {
+        "utility": "Pacific Gas & Electric",
+        "substation": "Market Street",
+        "circuit_type": "network",
+        "customer_density": "very_high",
+        "infrastructure_age_category": "medium"
+      },
+      "historical_reliability": {
+        "saidi_minutes": {
+          "last_year": 58.2,
+          "three_year_average": 62.5,
+          "trend": "improving"
+        },
+        "saifi_interruptions": {
+          "last_year": 0.85,
+          "three_year_average": 0.92,
+          "trend": "stable"
+        }
+      },
+      "baseline_forecasts": {
+        "saidi_minutes": {
+          "1_month": {
+            "mean": 5.2,
+            "confidence_interval": [3.8, 6.7]
+          },
+          "1_year": {
+            "mean": 56.8,
+            "confidence_interval": [48.5, 65.2]
+          },
+          "5_years": {
+            "mean": 52.3,
+            "confidence_interval": [42.1, 64.8],
+            "trend": "decreasing"
+          }
+        },
+        "saifi_interruptions": {
+          "1_month": {
+            "mean": 0.08,
+            "confidence_interval": [0.05, 0.11]
+          },
+          "1_year": {
+            "mean": 0.82,
+            "confidence_interval": [0.75, 0.89]
+          },
+          "5_years": {
+            "mean": 0.79,
+            "confidence_interval": [0.68, 0.92],
+            "trend": "stable"
+          }
+        },
+        "caidi_minutes": {
+          "1_month": {
+            "mean": 65.0,
+            "confidence_interval": [58.5, 71.8]
+          },
+          "1_year": {
+            "mean": 69.3,
+            "confidence_interval": [62.4, 76.5]
+          },
+          "5_years": {
+            "mean": 66.2,
+            "confidence_interval": [58.1, 75.4],
+            "trend": "stable"
+          }
+        },
+        "maifi_interruptions": {
+          "1_month": {
+            "mean": 0.12,
+            "confidence_interval": [0.08, 0.16]
+          },
+          "1_year": {
+            "mean": 1.28,
+            "confidence_interval": [1.05, 1.52]
+          },
+          "5_years": {
+            "mean": 1.15,
+            "confidence_interval": [0.92, 1.45],
+            "trend": "decreasing"
+          }
+        }
+      },
+      "scenario_forecasts": {
+        "climate_change": {
+          "saidi_minutes": {
+            "1_year": {
+              "mean": 62.3,
+              "difference_from_baseline_percentage": 9.7
+            },
+            "5_years": {
+              "mean": 68.5,
+              "difference_from_baseline_percentage": 30.9
+            }
+          },
+          "saifi_interruptions": {
+            "1_year": {
+              "mean": 0.88,
+              "difference_from_baseline_percentage": 7.3
+            },
+            "5_years": {
+              "mean": 0.94,
+              "difference_from_baseline_percentage": 19.0
+            }
+          }
+        },
+        "grid_hardening": {
+          "saidi_minutes": {
+            "1_year": {
+              "mean": 51.1,
+              "difference_from_baseline_percentage": -10.0
+            },
+            "5_years": {
+              "mean": 41.8,
+              "difference_from_baseline_percentage": -20.1
+            }
+          },
+          "saifi_interruptions": {
+            "1_year": {
+              "mean": 0.74,
+              "difference_from_baseline_percentage": -9.8
+            },
+            "5_years": {
+              "mean": 0.65,
+              "difference_from_baseline_percentage": -17.7
+            }
+          }
+        }
+      },
+      "key_risk_factors": {
+        "current_primary_factors": ["aging_underground_cables", "network_congestion"],
+        "emerging_factors": ["extreme_heat", "load_growth"]
+      }
+    }
+  ],
+  "comparative_analysis": {
+    "most_reliable_location": "Downtown SF",
+    "least_reliable_location": "San Jose HQ",
+    "saidi_difference_percentage": 42.8,
+    "saifi_difference_percentage": 68.3
+  },
+  "improvement_opportunities": {
+    "best_reliability_roi": "targeted_vegetation_management",
+    "fastest_improvement_option": "recloser_upgrades",
+    "high_impact_programs": ["grid_automation", "underground_inspection_program"]
+  }
+}
+```
+
+### Outage Vulnerability Analysis
+
+#### POST /risk/vulnerability-analysis
+
+Evaluates location-specific grid vulnerabilities that contribute to outage risk.
+
+##### Request
+
+```json
+{
+  "locations": [
+    {"lat": 37.7749, "lng": -122.4194, "location_name": "Downtown SF"}
+  ],
+  "vulnerability_factors": [
+    "weather", "vegetation", "equipment_age", "wildlife", 
+    "vehicle_accidents", "load_profile", "protection_coordination"
+  ],
+  "include_historical_analysis": true,
+  "included_asset_types": ["distribution", "substation"],
+  "mitigation_recommendations": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "vuln-234567",
+  "location": {"lat": 37.7749, "lng": -122.4194},
+  "location_name": "Downtown SF",
+  "grid_characteristics": {
+    "feeder_id": "feed-123",
+    "circuit_type": "network",
+    "primary_voltage_kv": 12.47,
+    "customer_count": 3450,
+    "critical_customers": 28
+  },
+  "vulnerability_scores": {
+    "weather": {
+      "score": 65,
+      "percentile": 42,
+      "primary_threats": ["high_winds", "flooding"],
+      "historical_contribution_percentage": 35
+    },
+    "vegetation": {
+      "score": 42,
+      "percentile": 28,
+      "primary_threats": ["tall_trees", "fast_growing_species"],
+      "historical_contribution_percentage": 18
+    },
+    "equipment_age": {
+      "score": 78,
+      "percentile": 82,
+      "primary_threats": ["underground_cable_failure", "aging_switches"],
+      "historical_contribution_percentage": 32
+    },
+    "wildlife": {
+      "score": 35,
+      "percentile": 22,
+      "primary_threats": ["squirrels", "birds"],
+      "historical_contribution_percentage": 8
+    },
+    "vehicle_accidents": {
+      "score": 25,
+      "percentile": 15,
+      "primary_threats": ["pole_strikes"],
+      "historical_contribution_percentage": 5
+    },
+    "load_profile": {
+      "score": 58,
+      "percentile": 65,
+      "primary_threats": ["peak_overloading", "rapid_growth"],
+      "historical_contribution_percentage": 12
+    },
+    "protection_coordination": {
+      "score": 45,
+      "percentile": 38,
+      "primary_threats": ["outdated_settings", "inadequate_sectionalizing"],
+      "historical_contribution_percentage": 10
+    }
+  },
+  "combined_vulnerability_score": 68,
+  "outage_frequency_projection": {
+    "expected_annual_outages": 2.8,
+    "expected_annual_customer_hours": 4950
+  },
+  "critical_vulnerabilities": [
+    {
+      "component": "underground_cable_section_123",
+      "issue": "insulation_degradation",
+      "risk_score": 85,
+      "estimated_replacement_cost": 185000,
+      "customers_at_risk": 850
+    }
+  ],
+  "mitigation_recommendations": [
+    {
+      "recommendation": "proactive_cable_replacement",
+      "targeted_vulnerability": "equipment_age",
+      "expected_risk_reduction_percentage": 28,
+      "roi_score": 4.2,
+      "implementation_timeline_months": 12,
+      "estimated_cost_range_usd": [150000, 220000]
+    },
+    {
+      "recommendation": "network_reconfiguration",
+      "targeted_vulnerability": "load_profile",
+      "expected_risk_reduction_percentage": 15,
+      "roi_score": 3.8,
+      "implementation_timeline_months": 3,
+      "estimated_cost_range_usd": [25000, 40000]
+    }
+  ]
+}
+```
+
+### Critical Infrastructure Resilience
+
+#### POST /risk/critical-infrastructure
+
+Analyzes outage risks and resilience measures for critical facilities at specified locations.
+
+##### Request
+
+```json
+{
+  "facilities": [
+    {
+      "name": "City Hospital",
+      "location": {"lat": 37.7749, "lng": -122.4194},
+      "facility_type": "hospital",
+      "priority_level": "highest",
+      "customer_id": "cust-12345"
+    }
+  ],
+  "analysis_periods": ["severe_weather", "normal_operations", "long_term"],
+  "critical_load_details": {
+    "include": true,
+    "load_categories": ["life_safety", "critical_operations", "equipment_protection"]
+  },
+  "existing_backup_resources": {
+    "diesel_generator_kw": 1500,
+    "battery_capacity_kwh": 250,
+    "fuel_storage_hours": 72
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "crit-345678",
+  "facility": {
+    "name": "City Hospital", 
+    "location": {"lat": 37.7749, "lng": -122.4194},
+    "facility_type": "hospital",
+    "priority_level": "highest",
+    "utility_service": {
+      "service_provider": "Pacific Gas & Electric",
+      "account_numbers": ["acct-123456"],
+      "service_voltage": "12.47kV",
+      "primary_feeder": "feed-123",
+      "alternative_feeder": "feed-124",
+      "automatic_transfer": true
+    },
+    "electrical_characteristics": {
+      "average_demand_kw": 850,
+      "peak_demand_kw": 1250,
+      "annual_consumption_mwh": 7450,
+      "load_factor": 0.68,
+      "power_factor": 0.92
+    }
+  },
+  "grid_service_risk": {
+    "historical_reliability": {
+      "annual_outages": 1.8,
+      "average_duration_hours": 2.4,
+      "total_downtime_hours_per_year": 4.3,
+      "outage_causes": {
+        "equipment_failure": 45,
+        "weather": 30,
+        "planned_outage": 15,
+        "other": 10
+      }
+    },
+    "severe_weather_risk": {
+      "outage_probability_percentage": 65,
+      "expected_duration_hours": 8.5,
+      "confidence_interval_hours": [4.5, 14.2],
+      "primary_threat": "high_wind",
+      "cascading_risk_factors": ["regional_transmission_constraints", "crew_access_limitations"]
+    },
+    "long_term_reliability_projection": {
+      "5yr_annual_outage_frequency_trend": "increasing",
+      "5yr_outage_duration_trend": "stable",
+      "infrastructure_risk_factors": ["aging_equipment", "increasing_load"],
+      "improvement_initiatives": ["feeder_automation", "selective_undergrounding"]
+    }
+  },
+  "backup_system_assessment": {
+    "adequacy_score": 82,
+    "coverage_percentage": {
+      "life_safety": 100,
+      "critical_operations": 85,
+      "equipment_protection": 65
+    },
+    "runtime_capability": {
+      "at_full_load_hours": 48,
+      "at_critical_load_hours": 72,
+      "fuel_resupply_risk": "medium"
+    },
+    "backup_reliability": {
+      "generator_reliability_percentage": 92,
+      "failure_risk_factors": ["maintenance_schedule", "fuel_quality"],
+      "last_full_load_test": "2024-02-15"
+    }
+  },
+  "resilience_recommendations": [
+    {
+      "recommendation": "install_additional_battery_storage",
+      "capacity_recommendation_kwh": 500,
+      "expected_resilience_improvement_percentage": 25,
+      "capital_cost_estimate_usd": 275000,
+      "annual_benefit_estimate_usd": 45000,
+      "payback_period_years": 6.1
+    },
+    {
+      "recommendation": "microgrid_controller_upgrade",
+      "expected_resilience_improvement_percentage": 18,
+      "capital_cost_estimate_usd": 85000,
+      "annual_benefit_estimate_usd": 32000, 
+      "payback_period_years": 2.7
+    }
+  ],
+  "external_resources": {
+    "utility_contact": "emergency-response@utility.com",
+    "priority_restoration_status": "confirmed",
+    "mutual_aid_agreements": ["city_emergency_services", "regional_hospital_network"],
+    "emergency_response_plan_status": "current"
+  }
+}
+```
+
+### Storm Impact Projection
+
+#### POST /risk/storm-impact
+
+Projects potential outage impacts from an approaching storm system.
+
+##### Request
+
+```json
+{
+  "storm_system": {
+    "name": "Winter Storm Jonas",
+    "type": "winter_storm",
+    "severity": "major"
+  },
+  "service_territory": {
+    "utility_id": "util-456", 
+    "regions": ["northeast", "central"]
+  },
+  "critical_threshold": {
+    "customer_outage_percentage": 10,
+    "outage_duration_hours": 24
+  },
+  "time_horizons": ["24h", "48h", "72h"],
+  "include_restoration_projections": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "storm-456789",
+  "storm_details": {
+    "name": "Winter Storm Jonas",
+    "type": "winter_storm",
+    "severity": "major",
+    "tracking_id": "noaa-ws-2024-42",
+    "forecast_update_time": "2024-04-16T06:00:00Z"
+  },
+  "impact_projections": {
+    "expected_outage_counts": {
+      "24h": {
+        "mean": 58500,
+        "confidence_interval": [42000, 78000],
+        "percentage_of_customers": 12.5
+      },
+      "48h": {
+        "mean": 85200,
+        "confidence_interval": [65000, 110000],
+        "percentage_of_customers": 18.2
+      },
+      "72h": {
+        "mean": 42100,
+        "confidence_interval": [32000, 55000],
+        "percentage_of_customers": 9.0
+      }
+    },
+    "regional_distribution": {
+      "northeast": {
+        "expected_outage_percentage": 22.5,
+        "highest_impact_counties": ["Suffolk", "Essex", "Norfolk"],
+        "primary_cause": "ice_accumulation"
+      },
+      "central": {
+        "expected_outage_percentage": 14.2,
+        "highest_impact_counties": ["Middlesex", "Worcester"],
+        "primary_cause": "wind"
+      }
+    },
+    "critical_facilities": {
+      "at_risk_count": 28,
+      "high_priority_facilities": 12,
+      "most_vulnerable_categories": ["water_treatment", "nursing_homes"]
+    }
+  },
+  "restoration_projections": {
+    "estimated_crew_requirements": 125,
+    "external_mutual_aid_needed": true,
+    "restoration_curve": {
+      "24h": 15,
+      "48h": 45,
+      "72h": 75,
+      "96h": 90,
+      "120h": 98
+    },
+    "expected_etr_by_region": {
+      "northeast": {
+        "90_percent_restoration": 96,
+        "100_percent_restoration": 144
+      },
+      "central": {
+        "90_percent_restoration": 72,
+        "100_percent_restoration": 120
+      }
+    },
+    "resource_constraints": {
+      "limiting_factors": ["road_access", "crew_availability"],
+      "material_shortages": ["poles", "transformers"]
+    }
+  },
+  "economic_impact": {
+    "total_customer_hours_projected": 4850000,
+    "estimated_economic_cost_usd": 12500000,
+    "reliability_metric_impacts": {
+      "saidi_minutes_added": 52.8,
+      "saifi_interruptions_added": 0.18
+    }
+  },
+  "preparation_recommendations": [
+    {
+      "action": "activate_emergency_operations_center",
+      "timing": "immediate",
+      "staffing_level": "level_2",
+      "key_roles_needed": ["operations_chief", "logistics_manager", "public_information_officer"]
+    },
+    {
+      "action": "pre_position_crews",
+      "timing": "24h_before",
+      "locations": ["northeast_district", "central_district"],
+      "crew_counts": 85
+    },
+    {
+      "action": "customer_communication",
+      "timing": "immediate",
+      "channels": ["email", "sms", "social_media", "outbound_calls"],
+      "message_focus": ["preparation_steps", "outage_reporting", "estimated_restoration_times"]
+    }
+  ]
+}
+```
+
+## Advanced Endpoints
+
+### DER Resilience Analysis
+
+#### POST /risk/der-resilience
+
+Analyzes how distributed energy resources at a location could improve resilience during outages.
+
+##### Request
+
+```json
+{
+  "location": {"lat": 37.7749, "lng": -122.4194},
+  "der_resources": {
+    "existing": {
+      "solar_pv_kw": 25,
+      "battery_storage_kwh": 40,
+      "backup_generator_kw": 0
+    },
+    "potential": {
+      "solar_pv_kw": 75,
+      "battery_storage_kwh": 150,
+      "backup_generator_kw": 20
+    }
+  },
+  "load_profile": {
+    "average_daily_kwh": 85,
+    "peak_demand_kw": 12,
+    "critical_load_percentage": 45
+  },
+  "resilience_scenarios": ["typical_outage", "major_storm", "extended_emergency"],
+  "financial_parameters": {
+    "electricity_rate_usd_per_kwh": 0.18,
+    "demand_charge_usd_per_kw": 12.50,
+    "include_incentives": true
+  }
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "der-567890",
+  "location": {"lat": 37.7749, "lng": -122.4194},
+  "grid_reliability_context": {
+    "average_outages_per_year": 2.3,
+    "average_outage_duration_hours": 2.8,
+    "primary_outage_causes": ["weather", "equipment_failure", "vegetation"]
+  },
+  "current_resilience": {
+    "backup_duration_hours": {
+      "full_load": 3.3,
+      "critical_load_only": 7.4
+    },
+    "annual_outage_coverage_percentage": 65,
+    "reliability_improvement": {
+      "effective_saidi_reduction_minutes": 8.5,
+      "effective_saifi_reduction": 0.0
+    }
+  },
+  "optimized_der_recommendations": {
+    "solar_pv_kw": 50,
+    "battery_storage_kwh": 120,
+    "smart_controls": true,
+    "backup_generator_kw": 0,
+    "capital_cost_estimate_usd": 65000,
+    "operating_cost_usd_per_year": 450
+  },
+  "resilience_improvements": {
+    "backup_duration_hours": {
+      "full_load": 10.2,
+      "critical_load_only": 22.5
+    },
+    "annual_outage_coverage_percentage": 95,
+    "reliability_improvement": {
+      "effective_saidi_reduction_minutes": 42.8,
+      "effective_saifi_reduction": 1.8
+    }
+  },
+  "scenario_performance": {
+    "typical_outage": {
+      "scenario_description": "2-4 hour outage due to equipment failure or minor weather",
+      "coverage_capability": "full_load_supported",
+      "success_probability": 0.98
+    },
+    "major_storm": {
+      "scenario_description": "12-24 hour outage due to severe weather event",
+      "coverage_capability": "critical_load_supported",
+      "success_probability": 0.92
+    },
+    "extended_emergency": {
+      "scenario_description": "48-72 hour outage due to regional disaster",
+      "coverage_capability": "partial_critical_load",
+      "success_probability": 0.65,
+      "limiting_factors": ["battery_capacity", "solar_generation_variability"]
+    }
+  },
+  "financial_analysis": {
+    "annual_utility_bill_savings_usd": 2850,
+    "demand_charge_reduction_usd": 1500,
+    "resilience_value_usd_per_year": 3200,
+    "available_incentives_usd": 15000,
+    "payback_period_years": 7.2,
+    "20yr_net_present_value_usd": 38500
+  }
+}
+```
+
+### Underground System Risk Analysis
+
+#### POST /risk/underground-system
+
+Analyzes outage risks specific to underground distribution systems.
+
+##### Request
+
+```json
+{
+  "locations": [
+    {"lat": 37.7749, "lng": -122.4194, "location_name": "Downtown SF"}
+  ],
+  "system_details": {
+    "primary_cable_type": "XLPE",
+    "installation_year": 2002,
+    "duct_configuration": "direct_buried",
+    "switching_type": "manual"
+  },
+  "risk_factors": ["age", "loading", "water_intrusion", "thermal_conditions", "switching_failures"],
+  "include_failure_rate_projections": true
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "ug-678901",
+  "location": {"lat": 37.7749, "lng": -122.4194},
+  "location_name": "Downtown SF",
+  "system_characteristics": {
+    "primary_cable_type": "XLPE",
+    "installation_year": 2002,
+    "duct_configuration": "direct_buried",
+    "switching_type": "manual",
+    "system_age_years": 22,
+    "nominal_design_life_years": 30,
+    "remaining_useful_life_estimate_years": 10.5
+  },
+  "risk_assessment": {
+    "overall_risk_score": 68,
+    "risk_factors": {
+      "age": {
+        "score": 72,
+        "contributing_factors": ["insulation_degradation", "neutral_corrosion"],
+        "mitigation_options": ["partial_discharge_testing", "targeted_replacement"]
+      },
+      "loading": {
+        "score": 65,
+        "contributing_factors": ["peak_demand_growth", "daily_thermal_cycling"],
+        "mitigation_options": ["load_management", "cable_uprating"]
+      },
+      "water_intrusion": {
+        "score": 82,
+        "contributing_factors": ["flooding_history", "high_water_table", "poor_drainage"],
+        "mitigation_options": ["sump_pump_installation", "duct_sealing", "submersible_components"]
+      },
+      "thermal_conditions": {
+        "score": 58,
+        "contributing_factors": ["proximity_to_steam_lines", "high_soil_thermal_resistivity"],
+        "mitigation_options": ["thermal_backfill", "load_monitoring"]
+      },
+      "switching_failures": {
+        "score": 45,
+        "contributing_factors": ["mechanical_wear", "moisture_intrusion"],
+        "mitigation_options": ["preventive_maintenance", "switch_replacement"]
+      }
+    },
+    "highest_risk_components": [
+      {
+        "component_type": "cable_section",
+        "location_description": "Main St crossing",
+        "risk_score": 85,
+        "failure_probability_next_year": 0.12,
+        "customers_impacted_if_failed": 850
+      },
+      {
+        "component_type": "switching_cubicle",
+        "location_description": "Market Square vault",
+        "risk_score": 78,
+        "failure_probability_next_year": 0.08,
+        "customers_impacted_if_failed": 1250
+      }
+    ]
+  },
+  "failure_rate_projections": {
+    "current_failures_per_100_miles_per_year": 4.2,
+    "historical_trend": "increasing",
+    "5yr_projected_failures_per_100_miles_per_year": 5.8,
+    "projected_trend_without_intervention": "accelerating",
+    "failure_clusters": {
+      "geographical_hotspots": [
+        {
+          "area_description": "Financial District",
+          "failure_rate_multiplier": 1.8,
+          "primary_causes": ["age", "water_intrusion"]
+        }
+      ],
+      "temporal_patterns": {
+        "seasonal_peaks": "summer",
+        "correlation_with_loading": "strong",
+        "correlation_with_rainfall": "moderate"
+      }
+    }
+  },
+  "reliability_impact": {
+    "contribution_to_saidi_minutes": 18.5,
+    "contribution_to_saifi": 0.22,
+    "typical_outage_duration_hours": 8.5,
+    "restoration_challenges": ["access_constraints", "diagnostic_time", "repair_complexity"]
+  },
+  "mitigation_strategy": {
+    "overall_approach": "targeted_replacement_and_monitoring",
+    "recommended_actions": [
+      {
+        "action": "install_water_sensors",
+        "priority": "high",
+        "coverage": "all_manholes_in_flood_prone_areas",
+        "estimated_cost_usd": 85000,
+        "expected_risk_reduction_percentage": 15
+      },
+      {
+        "action": "cable_replacement_program",
+        "priority": "medium",
+        "coverage": "highest_risk_sections",
+        "estimated_cost_usd": 1250000,
+        "expected_risk_reduction_percentage": 35
+      }
+    ],
+    "monitoring_recommendations": {
+      "online_partial_discharge": true,
+      "temperature_monitoring": true,
+      "inspection_frequency_months": 6
+    }
+  }
+}
+```
+
+### Predictive Maintenance Optimization
+
+#### POST /risk/predictive-maintenance
+
+Identifies optimal maintenance schedules based on outage risk profiles and asset conditions.
+
+##### Request
+
+```json
+{
+  "operating_region_id": "region-456",
+  "asset_categories": ["transformers", "reclosers", "switches", "overhead_lines", "underground_cables"],
+  "maintenance_constraints": {
+    "annual_budget_usd": 1200000,
+    "maintenance_crew_ftes": 12,
+    "emergency_reserve_percentage": 20
+  },
+  "risk_threshold": {
+    "acceptable_failure_rate_percentage": 2.5,
+    "critical_customer_interruption_tolerance": "minimal"
+  },
+  "optimization_goals": ["risk_reduction", "cost_efficiency", "resource_leveling"]
+}
+```
+
+##### Response
+
+```json
+{
+  "optimization_id": "maint-789012",
+  "operating_region_id": "region-456",
+  "optimized_maintenance_program": {
+    "annual_schedule": {
+      "q1": {
+        "focus_categories": ["underground_cables", "transformers"],
+        "allocated_budget_usd": 320000,
+        "allocated_crew_ftes": 10.5,
+        "risk_reduction_percentage": 12.5
+      },
+      "q2": {
+        "focus_categories": ["overhead_lines", "reclosers"],
+        "allocated_budget_usd": 380000,
+        "allocated_crew_ftes": 11.2,
+        "risk_reduction_percentage": 15.8
+      },
+      "q3": {
+        "focus_categories": ["switches", "overhead_lines"],
+        "allocated_budget_usd": 290000,
+        "allocated_crew_ftes": 9.8,
+        "risk_reduction_percentage": 11.2
+      },
+      "q4": {
+        "focus_categories": ["transformers", "underground_cables"],
+        "allocated_budget_usd": 210000,
+        "allocated_crew_ftes": 8.5,
+        "risk_reduction_percentage": 9.5
+      }
+    },
+    "emergency_reserve": {
+      "budget_usd": 240000,
+      "crew_fte_equivalent": 2.8
+    }
+  },
+  "asset_type_strategies": {
+    "transformers": {
+      "inspection_frequency": "annual",
+      "testing_protocols": ["dissolved_gas_analysis", "infrared_scanning", "oil_quality"],
+      "prioritization_factors": ["loading_history", "age", "failure_consequence"],
+      "high_priority_units": 28,
+      "allocated_budget_usd": 320000
+    },
+    "overhead_lines": {
+      "inspection_frequency": "annual",
+      "testing_protocols": ["visual_inspection", "infrared_scanning", "corona_detection"],
+      "prioritization_factors": ["age", "vegetation_proximity", "historic_performance"],
+      "high_priority_spans": 152,
+      "allocated_budget_usd": 280000
+    },
+    "underground_cables": {
+      "inspection_frequency": "biennial",
+      "testing_protocols": ["partial_discharge", "insulation_resistance", "tan_delta"],
+      "prioritization_factors": ["age", "loading_history", "water_exposure"],
+      "high_priority_segments": 42,
+      "allocated_budget_usd": 360000
+    }
+  },
+  "reliability_improvements": {
+    "expected_saidi_reduction_minutes": 28.5,
+    "expected_saifi_reduction": 0.15,
+    "expected_failure_reduction_percentage": 35,
+    "cost_per_customer_minute_saved_usd": 0.85
+  },
+  "data_driven_insights": {
+    "key_reliability_drivers": [
+      {
+        "category": "aging_underground_cables",
+        "contribution_to_outages_percentage": 28,
+        "risk_trend": "increasing",
+        "data_quality_assessment": "good"
+      },
+      {
+        "category": "overhead_equipment_failures",
+        "contribution_to_outages_percentage": 22,
+        "risk_trend": "stable",
+        "data_quality_assessment": "very_good"
+      }
+    ],
+    "emerging_risk_factors": [
+      {
+        "factor": "increased_loading",
+        "affected_assets": ["transformers", "underground_cables"],
+        "detection_methods": ["loading_analytics", "temperature_monitoring"]
+      }
+    ],
+    "data_improvement_recommendations": [
+      {
+        "area": "asset_health_monitoring",
+        "current_maturity": "developing",
+        "recommended_action": "implement_iot_sensors",
+        "expected_benefit": "real_time_condition_awareness"
+      }
+    ]
+  }
+}
+```
+
+## Utility Tools
+
+### Historical Outage Analysis
+
+#### POST /analytics/historical-outages
+
+Analyzes historical outage patterns to identify trends and risk factors.
+
+##### Request
+
+```json
+{
+  "operating_region_id": "region-456",
+  "time_period": {
+    "start_date": "2019-01-01",
+    "end_date": "2024-01-01"
+  },
+  "analysis_dimensions": ["cause", "weather", "time_of_day", "season", "location"],
+  "include_reliability_metrics": true,
+  "spatial_resolution": "circuit"
+}
+```
+
+##### Response
+
+```json
+{
+  "analysis_id": "hist-890123",
+  "operating_region_id": "region-456",
+  "time_period": {
+    "start_date": "2019-01-01",
+    "end_date": "2024-01-01",
+    "total_years": 5
+  },
+  "overall_statistics": {
+    "total_outages": 1825,
+    "total_customer_interruptions": 3250000,
+    "total_customer_hours": 8750000,
+    "average_customers_per_outage": 1781,
+    "average_duration_hours": 2.7
+  },
+  "reliability_metrics": {
+    "average_saidi_minutes": 175.0,
+    "average_saifi": 1.3,
+    "average_caidi_minutes": 134.6,
+    "trend_analysis": {
+      "saidi_trend": "slightly_increasing",
+      "saifi_trend": "stable",
+      "caidi_trend": "slightly_increasing"
+    }
+  },
+  "cause_analysis": {
+    "primary_causes": [
+      {
+        "cause": "weather",
+        "percentage_of_outages": 35.2,
+        "percentage_of_customer_hours": 48.5,
+        "average_duration_hours": 3.7,
+        "trend": "increasing"
+      },
+      {
+        "cause": "equipment_failure",
+        "percentage_of_outages": 28.5,
+        "percentage_of_customer_hours": 22.3,
+        "average_duration_hours": 2.1,
+        "trend": "stable"
+      },
+      {
+        "cause": "vegetation",
+        "percentage_of_outages": 18.2,
+        "percentage_of_customer_hours": 15.8,
+        "average_duration_hours": 2.3,
+        "trend": "decreasing"
+      }
+    ],
+    "sub_causes": {
+      "equipment_failure": {
+        "transformer": 32.5,
+        "underground_cable": 28.2,
+        "overhead_conductor": 15.8,
+        "switch_gear": 10.5,
+        "other": 13.0
+      },
+      "weather": {
+        "wind": 45.2,
+        "lightning": 22.5,
+        "ice": 15.8,
+        "flooding": 8.5,
+        "heat": 5.2,
+        "other": 2.8
+      }
+    }
+  },
+  "temporal_patterns": {
+    "monthly_distribution": {
+      "highest_month": "August",
+      "lowest_month": "April",
+      "seasonal_pattern": "summer_peak"
+    },
+    "time_of_day": {
+      "highest_period": "15:00-18:00",
+      "lowest_period": "03:00-06:00"
+    },
+    "day_of_week": {
+      "highest_day": "Saturday",
+      "weekend_vs_weekday_ratio": 1.2
+    },
+    "special_periods": {
+      "storm_season_multiplier": 2.8,
+      "heat_wave_multiplier": 1.9
+    }
+  },
+  "spatial_patterns": {
+    "highest_outage_circuits": [
+      {
+        "circuit_id": "cir-12345",
+        "circuit_name": "North Hills 103",
+        "outages_per_year": 12.5,
+        "customer_hours_per_year": 28500,
+        "primary_cause": "vegetation",
+        "risk_score": 85
+      }
+    ],
+    "geographical_clusters": [
+      {
+        "region_name": "Western Mountains",
+        "outage_rate_multiplier": 1.8,
+        "primary_cause": "weather",
+        "contributing_factors": ["exposed_terrain", "limited_access", "aging_infrastructure"]
+      }
+    ],
+    "infrastructure_correlations": {
+      "oldest_infrastructure_outage_multiplier": 2.2,
+      "underground_vs_overhead_outage_ratio": 0.35,
+      "network_vs_radial_outage_ratio": 0.28
+    }
+  }
+}
+```
+
+### Outage Risk Report
+
+#### POST /reports/outage-risk
+
+Generates comprehensive outage risk reports for specific locations or regions.
+
+##### Request
+
+```json
+{
+  "report_type": "location_specific",
+  "locations": [
+    {"lat": 37.7749, "lng": -122.4194, "location_name": "Downtown SF"}
+  ],
+  "time_horizons": ["near_term", "annual", "five_year"],
+  "risk_factors": ["weather", "asset_health", "vegetation", "loading"],
+  "include_recommendations": true,
+  "output_format": "json"
+}
+```
+
+##### Response
+
+```json
+{
+  "report_id": "rep-901234",
+  "generation_timestamp": "2024-04-16T10:25:45Z",
+  "location": {"lat": 37.7749, "lng": -122.4194},
+  "location_name": "Downtown SF",
+  "electrical_characteristics": {
+    "service_provider": "Pacific Gas & Electric",
+    "primary_substation": "Mission Street",
+    "primary_feeder": "Mission 2104",
+    "circuit_type": "network",
+    "customer_count": 12500,
+    "critical_facilities_count": 28,
+    "circuit_peak_load_mw": 18.5
+  },
+  "executive_summary": {
+    "overall_risk_rating": "moderate",
+    "most_significant_risks": ["aging_underground_cable", "flooding_vulnerability"],
+    "5yr_reliability_trend": "slight_degradation_without_intervention",
+    "key_recommendations": "targeted_cable_replacement_and_flood_mitigation"
+  },
+  "near_term_risk_assessment": {
+    "7_day_outage_probability": 0.035,
+    "30_day_outage_probability": 0.12,
+    "weather_driven_risks": {
+      "current_weather_outlook": "clear",
+      "upcoming_weather_risks": "none_significant",
+      "seasonal_considerations": "entering_summer_peak_load_period"
+    },
+    "operational_risks": {
+      "planned_work_impacts": "minimal",
+      "current_loading_status": "moderate",
+      "equipment_status": "all_systems_nominal"
+    }
+  },
+  "annual_risk_perspective": {
+    "expected_outages_per_year": 1.8,
+    "expected_customer_minutes_interrupted": 285000,
+    "expected_saidi_contribution_minutes": 22.8,
+    "expected_saifi_contribution": 0.15,
+    "primary_risk_drivers": [
+      {
+        "driver": "equipment_failure",
+        "contribution_percentage": 45,
+        "specific_concerns": ["aging_cable_sections", "obsolete_switches"]
+      },
+      {
+        "driver": "weather",
+        "contribution_percentage": 30,
+        "specific_concerns": ["localized_flooding", "coastal_fog_related_issues"]
+      }
+    ],
+    "seasonal_risk_profile": {
+      "highest_risk_period": "summer_peak",
+      "lowest_risk_period": "spring"
+    }
+  },
+  "five_year_risk_projection": {
+    "baseline_trajectory": {
+      "saidi_trend_percentage": 15,
+      "saifi_trend_percentage": 8,
+      "outage_frequency_change_percentage": 12
+    },
+    "key_factors_influencing_long_term_risk": [
+      {
+        "factor": "infrastructure_aging",
+        "impact_level": "high",
+        "mitigation_difficulty": "medium",
+        "trend": "worsening"
+      },
+      {
+        "factor": "load_growth",
+        "impact_level": "medium",
+        "mitigation_difficulty": "high", 
+        "trend": "increasing"
+      },
+      {
+        "factor": "climate_change",
+        "impact_level": "medium",
+        "mitigation_difficulty": "high",
+        "trend": "worsening"
+      }
+    ],
+    "reliability_scenarios": {
+      "status_quo": {
+        "5yr_saidi_minutes": 28.5,
+        "5yr_saifi": 0.18
+      },
+      "enhanced_maintenance": {
+        "5yr_saidi_minutes": 21.2,
+        "5yr_saifi": 0.14,
+        "required_investment_usd": 2500000
+      },
+      "infrastructure_upgrade": {
+        "5yr_saidi_minutes": 15.8,
+        "5yr_saifi": 0.10,
+        "required_investment_usd": 8500000
+      }
+    }
+  },
+  "risk_mitigation_recommendations": {
+    "near_term_actions": [
+      {
+        "action": "targeted_cable_testing",
+        "priority": "high",
+        "estimated_cost_usd": 75000,
+        "risk_reduction_percentage": 15,
+        "implementation_timeline_months": 3
+      }
+    ],
+    "medium_term_actions": [
+      {
+        "action": "network_protector_upgrades",
+        "priority": "medium",
+        "estimated_cost_usd": 350000,
+        "risk_reduction_percentage": 18,
+        "implementation_timeline_months": 12
+      }
+    ],
+    "long_term_actions": [
+      {
+        "action": "phased_cable_replacement_program",
+        "priority": "high",
+        "estimated_cost_usd": 3500000,
+        "risk_reduction_percentage": 35,
+        "implementation_timeline_months": 36
+      }
+    ],
+    "cost_benefit_analysis": {
+      "total_investment_usd": 3925000,
+      "expected_customer_minutes_saved": 3850000,
+      "net_present_value_usd": 2850000,
+      "benefit_cost_ratio": 1.7
+    }
+  },
+  "data_visualization_urls": {
+    "risk_heat_map": "https://api.gridleaf.com/maps/risk-heat-rep-901234",
+    "historical_reliability_charts": "https://api.gridleaf.com/charts/reliability-rep-901234",
+    "risk_factor_breakdown": "https://api.gridleaf.com/charts/risk-factors-rep-901234"
+  }
+}
+```
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| 400  | Bad Request - The request was malformed or missing required parameters |
+| 401  | Unauthorized - Authentication failed or API key is invalid |
+| 403  | Forbidden - The API key doesn't have access to the requested resource |
+| 404  | Not Found - The requested resource doesn't exist |
+| 429  | Too Many Requests - Rate limit exceeded |
+| 500  | Internal Server Error - Something went wrong on our end |
+
+## Rate Limits
+
+- Standard tier: 500 requests per day
+- Professional tier: 2,500 requests per day
+- Enterprise tier: 10,000+ requests per day (customizable)
+
+## Support
+
+For API support, contact api-support@gridleaf.com or visit our developer portal at https://dev.gridleaf.org.

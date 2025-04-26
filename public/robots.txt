@@ -1,0 +1,10 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://dev.gridleaf.com
+
+# Sitemaps
+Sitemap: https://dev.gridleaf.com/sitemap.xml
+Sitemap: https://your-domain.com/server-sitemap.xml

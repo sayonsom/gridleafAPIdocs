@@ -1,27 +1,70 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { IBM_Plex_Sans } from "next/font/google";
+import { Fira_Code } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const ibmPlexSans = IBM_Plex_Sans({
+  weight: ['400', '500', '600', '700'],
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-ibm-plex-sans",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const firaCode = Fira_Code({
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-fira-code",
 });
 
 export const metadata = {
-  title: "GridLeaf API Documentation",
-  description: "Modern developer tools for grid planning and resiliency",
+  title: {
+    default: "GridLeaf API Documentation",
+    template: "%s | GridLeaf API Documentation"
+  },
+  description: "Modern developer tools for grid planning and resiliency. Comprehensive API documentation and guides for GridLeaf's powerful grid management solutions.",
+  keywords: ["grid planning", "resiliency", "API documentation", "developer tools", "grid management"],
+  authors: [{ name: "GridLeaf Team" }],
+  creator: "GridLeaf",
+  publisher: "GridLeaf",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL('https://dev.gridleaf.org'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "GridLeaf API Documentation",
+    description: "Modern developer tools for grid planning and resiliency",
+    url: 'https://dev.gridleaf.org',
+    siteName: 'GridLeaf API Documentation',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "GridLeaf API Documentation",
+    description: "Modern developer tools for grid planning and resiliency",
+    creator: '@gridleaf_',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark`}>
+    <html lang="en" className={`${ibmPlexSans.variable} ${firaCode.variable} dark`}>
       <body className="antialiased font-sans min-h-screen bg-transparent relative text-gray-100">
         <div className="fixed inset-0 bg-[#000000]" />
         <div className="fixed inset-0">
