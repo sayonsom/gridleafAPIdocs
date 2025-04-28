@@ -31,10 +31,10 @@ export default async function Home() {
       <div className="text-white py-20 px-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Build the Future of Energy Analytics
+            Grid and Energy Developers Platform
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-gray-300">
-            Comprehensive API documentation and tools for energy industry professionals to build powerful AI and quantitative applications.
+            Comprehensive API documentation and tools for energy industry professionals to build powerful AI and quantitative analytics applications.
           </p>
           <div className="flex gap-4">
             <Link
@@ -70,46 +70,46 @@ export default async function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                title: "Grid Optimization API",
-                description: "Optimize grid operations with AI-powered load balancing and demand forecasting",
-                category: "Grid Management"
+                slug: "buildable-area-analysis",
+                title: "Renewable Buildable Area Analysis API",
+                description: "Identify optimal sites for solar and wind development based on comprehensive geographic, environmental, and regulatory data."
               },
               {
-                title: "Renewable Integration API",
-                description: "Seamlessly integrate renewable energy sources into existing grid infrastructure",
-                category: "Renewables"
+                slug: "land-parcel-api",
+                title: "LandParcel Analysis API",
+                description: "Streamline right-of-way and easement processes with detailed land parcel analysis."
               },
               {
-                title: "Market Analysis API",
-                description: "Real-time energy market analysis and price forecasting",
-                category: "Trading"
+                slug: "load-forecasting-api",
+                title: "Load Forecasting API",
+                description: "Accurately predict and model future load demands across distribution networks."
               },
               {
-                title: "Risk Assessment API",
-                description: "Comprehensive risk analysis for grid operations and energy portfolios",
-                category: "Risk Management"
+                slug: "power-outage-risk-api",
+                title: "Power Outage Risk API",
+                description: "Assess outage risk based on near-term weather events and long-term reliability forecasts."
               },
               {
-                title: "Demand Response API",
-                description: "Manage and optimize demand response programs",
-                category: "Grid Management"
+                slug: "resiliency-api",
+                title: "Resiliency Optimization API",
+                description: "Optimize power distribution and recovery strategies after grid disruption events."
               },
               {
-                title: "Asset Management API",
-                description: "Monitor and optimize grid assets and infrastructure",
-                category: "Operations"
+                slug: "vegetation-risk-api",
+                title: "Vegetation Risk API",
+                description: "Identify, quantify, and prioritize vegetation-related threats to overhead distribution lines."
               }
             ].map((api, index) => (
-              <div
+              <Link
                 key={index}
-                className="group p-6 border border-gray-700 rounded-lg hover:border-green-500 transition-all duration-300 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                href={`/docs/${api.slug}`}
+                className="group p-6 border border-gray-700 rounded-lg hover:border-green-500 transition-all duration-300 hover:shadow-[0_0_15px_rgba(34,197,94,0.3)] block"
               >
-                <span className="text-sm text-green-500 mb-2 block">{api.category}</span>
                 <h3 className="text-xl font-semibold mb-3 text-white">{api.title}</h3>
                 <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
                   {api.description}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

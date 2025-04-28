@@ -23,7 +23,7 @@ All API requests require an API key passed in the header:
 Authorization: Bearer YOUR_API_KEY
 ```
 
-To obtain an API key, please contact our [support team](mailto:support@landparcel-analysis.com).
+To obtain an API key, create an account at [gridleaf.org/signup](https://gridleaf.org/signup), then navigate to Profile > Manage APIs.
 
 ## Endpoints
 
@@ -233,7 +233,7 @@ Generates an easement document based on parcel and project information.
 ```json
 {
   "easement_id": "E12345",
-  "document_url": "https://api.landparcel-analysis.com/documents/easement_E12345.pdf",
+  "document_url": "https://api.gridleaf.org/documents/easement_E12345.pdf",
   "status": "draft",
   "created_at": "2025-04-25T15:00:00Z",
   "expires_at": "2025-05-25T15:00:00Z" // URL expiration, not easement expiration
@@ -263,7 +263,7 @@ Retrieves information about a specific easement document.
   "project_id": "PROJ001",
   "easement_type": "transmission",
   "status": "draft", // options: draft, sent, signed, recorded, terminated
-  "document_url": "https://api.landparcel-analysis.com/documents/easement_E12345.pdf",
+  "document_url": "https://api.gridleaf.org/documents/easement_E12345.pdf",
   "created_at": "2025-04-25T15:00:00Z",
   "updated_at": "2025-04-25T15:00:00Z"
 }
@@ -301,7 +301,7 @@ Updates the status of an easement document.
   "easement_id": "E12345",
   "status": "signed",
   "updated_at": "2025-05-01T10:20:00Z",
-  "document_url": "https://api.landparcel-analysis.com/documents/easement_E12345_signed.pdf"
+  "document_url": "https://api.gridleaf.org/documents/easement_E12345_signed.pdf"
 }
 ```
 
@@ -333,7 +333,7 @@ Multipart form data with the following fields:
   "status": "processing",
   "file_name": "county_parcels.shp",
   "feature_count": 532,
-  "processing_url": "https://api.landparcel-analysis.com/gis/status/U123456"
+  "processing_url": "https://api.gridleaf.org/gis/status/U123456"
 }
 ```
 
@@ -375,7 +375,7 @@ Performs spatial analysis by overlaying different layers.
 {
   "analysis_id": "OA789012",
   "status": "completed",
-  "results_url": "https://api.landparcel-analysis.com/gis/results/OA789012.geojson",
+  "results_url": "https://api.gridleaf.org/gis/results/OA789012.geojson",
   "summary": {
     "total_area": 5.7,
     "area_unit": "acres",
@@ -511,7 +511,7 @@ Generates a comprehensive report about the project's land acquisition status.
   "report_id": "R456789",
   "status": "queued",
   "estimated_completion": "2025-04-26T11:00:00Z",
-  "status_url": "https://api.landparcel-analysis.com/reports/status/R456789"
+  "status_url": "https://api.gridleaf.org/reports/status/R456789"
 }
 ```
 
@@ -536,7 +536,7 @@ Checks the status of a report generation request.
   "report_id": "R456789",
   "status": "completed", // options: queued, processing, completed, failed
   "progress": 100,
-  "download_url": "https://api.landparcel-analysis.com/reports/R456789.pdf",
+  "download_url": "https://api.gridleaf.org/reports/R456789.pdf",
   "expires_at": "2025-05-26T11:00:00Z"
 }
 ```
@@ -588,15 +588,6 @@ The API supports webhooks for asynchronous notifications about the completion of
 }
 ```
 
-## SDKs and Client Libraries
-
-We provide official client libraries for the following languages:
-
-- Python: [GitHub Repository](https://github.com/landparcel-analysis/python-sdk)
-- JavaScript/TypeScript: [GitHub Repository](https://github.com/landparcel-analysis/js-sdk)
-- Java: [GitHub Repository](https://github.com/landparcel-analysis/java-sdk)
-- C#: [GitHub Repository](https://github.com/landparcel-analysis/csharp-sdk)
-
 ## Support
 
-For technical support, please contact [api-support@landparcel-analysis.com](mailto:api-support@landparcel-analysis.com) or visit our [Developer Portal](https://developers.landparcel-analysis.com).
+For technical support, please contact [support@gridleaf.org](mailto:support@gridleaf.org) or visit our [Developer Portal](https://developers.gridleaf.org).
